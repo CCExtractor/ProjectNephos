@@ -6,13 +6,16 @@
 # ====================
 # Deps:
 
-/libs/*
+# /libs/
 
 # ====================
 # Build info:
 
 *.pyc
 /.cache/
+/*egg-info/
+
+/dist/*
 
 # ====================
 # Coverage and test results:
