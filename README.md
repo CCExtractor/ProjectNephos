@@ -22,8 +22,11 @@ They will contain configuration and running data of the application
 
 ### Using Docker
 
-1. Download docker image: `docker pull xxx`
-2. Run container: `docker start`
+First you need to get an image (it is private). You could download it (not
+implemented yet) or **build** (see _development section_ of this guide)
+
+Having image locally you can run a container:
+`docker run --rm --name mon xirvik/recordingmonitor:0.0.1`
 
 Some settings can be set through environment variables. But it is possible to
 mount configuration file from host-machine.
@@ -67,6 +70,9 @@ python setup.py sdist
 
 ### Build new Docker image
 
+You need to have targzipped package in the `/dist` folder (see _Publish new
+version_ section of this guide)
+
 ```
-docker build -f docker/Dockerfile .
+docker build -f docker/Dockerfile -t xirvik/recordingmonitor:0.0.1 .
 ```
