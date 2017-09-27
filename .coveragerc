@@ -2,7 +2,8 @@
 [run]
 branch = True
 omit =
-	*_test.py
+	*_test.py,
+	*/__main__.py
 
 [report]
 precision=3

@@ -1,10 +1,13 @@
 FROM python:3.6
 
-WORKDIR /xirvik/recordingmonitor/
+WORKDIR /opt/recordingmonitor/
 
-ADD dist/ /xirvik/dist/
-RUN pip install /xirvik/dist/xirvik-recordingmonitor-0.0.1.dev0.tar.gz
+ADD dist/ /tmp/dist/
+RUN \
+	pip install /tmp/dist/unav-recordingmonitor-0.0.1.dev1.tar.gz && \
+	rm -r /tmp/dist/
 
-VOLUME /xirvik/recordingmonitor/data/
 
-CMD ["XirvikRecordingMonitor"]
+VOLUME /var/recordingmonitor/data/
+
+CMD ["RecordingMonitor"]

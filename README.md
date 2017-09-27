@@ -8,9 +8,9 @@
 
 ### Using PIP and package
 
-1. download package `xirvik-recordingmonitor-0.0.1.tar.gz` (or any other version)
-2. install `pip install xirvik-recordingmonitor-0.0.1.tar.gz`
-3. run `XirvikRecordingMonitor` **OR** `python3 -m xirvik.recordingmonitor`
+1. download package `unav-recordingmonitor-0.0.1.tar.gz` (or any other version)
+2. install `pip install unav-recordingmonitor-0.0.1.tar.gz`
+3. run `RecordingMonitor` **OR** `python3 -m unav.recordingmonitor`
 4. open http://127.0.0.1:9000 in your browser
 
 Script will create:
@@ -26,7 +26,7 @@ First you need to get an image (it is private). You could download it (not
 implemented yet) or **build** (see _development section_ of this guide)
 
 Having image locally you can run a container:
-`docker run --rm --name mon xirvik/recordingmonitor:0.0.1`
+`docker run --rm --name mon unav/recordingmonitor:0.0.1`
 
 Some settings can be set through environment variables. But it is possible to
 mount configuration file from host-machine.
@@ -74,5 +74,5 @@ You need to have targzipped package in the `/dist` folder (see _Publish new
 version_ section of this guide)
 
 ```
-docker build -f docker/Dockerfile -t xirvik/recordingmonitor:0.0.1 .
+docker build -f docker/Dockerfile -t unav/recordingmonitor:0.0.1 .
 ```

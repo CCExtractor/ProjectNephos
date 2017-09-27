@@ -5,12 +5,12 @@ from setuptools import setup
 from setuptools import find_packages
 
 VERSION = (0, 0, 1)
-VERSION_SUFFIX = 'dev.0'
+VERSION_SUFFIX = 'dev.1'
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX
 
-__title__ = 'xirvik-recordingmonitor'
+__title__ = 'unav-recordingmonitor'
 __description__ = 'RecordingMonitor - Recording monitor'
 __copyright__ = '2016-2017 © Xirvik Python Team'
 __author__ = 'Xirvik Python Team'
@@ -54,7 +54,7 @@ __release__ = '{release}'
 		version=__version__,
 		release=__release__,
 	)
-	outname = os.path.join('xirvik', 'recordingmonitor', 'version.py')
+	outname = os.path.join('unav', 'recordingmonitor', 'version.py')
 	with open(outname, 'w') as out:
 		out.write(txt)
 
@@ -74,7 +74,7 @@ setup(
 	long_description=read_all('README.md'),
 	keywords='network',
 	packages=find_packages(
-		include=['xirvik.recordingmonitor', 'xirvik.recordingmonitor.*'],
+		include=['unav', 'unav.recordingmonitor', 'unav.recordingmonitor.*'],
 		exclude=['*_test*'],
 	),
 	zip_safe=True,
@@ -123,6 +123,6 @@ setup(
 
 	entry_points='''
 [console_scripts]
-	XirvikRecordingMonitor=xirvik.recordingmonitor:main
+	RecordingMonitor=unav.recordingmonitor:main
 	'''
 )
