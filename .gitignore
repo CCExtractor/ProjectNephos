@@ -1,0 +1,26 @@
+# ====================
+# Logs:
+
+/recordingmonitor.log
+
+# ====================
+# Deps:
+
+/libs/*
+
+# ====================
+# Build info:
+
+*.pyc
+/.cache/
+
+# ====================
+# Coverage and test results:
+
+.coverage
+/cover-html/
+
+# ====================
+# Private stuff:
+
+.env

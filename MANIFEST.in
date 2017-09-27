@@ -1,0 +1,12 @@
+include *.py
+
+include AUTHORS
+include CHANGELOG.md
+include README.rst
+include README.md
+include LICENSE
+
+exclude .travis.yml
+exclude appveyor.yml
+exclude bitbucket-pipelines.yml
+global-exclude *_test.py
