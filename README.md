@@ -57,10 +57,16 @@ Send to upstream:
 2. Push to your fork: `git push origin`
 3. Create PULL REQUEST and wait for acceptance!
 
-## Publish new version
+### Publish new version
 
 To create new package run:
 
 ```
 python setup.py sdist
+```
+
+### Build new Docker image
+
+```
+docker build -f docker/Dockerfile .
 ```
