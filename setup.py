@@ -101,12 +101,16 @@ setup(
 	test_suite='pytest',
 
 	install_requires=[
+		'flask            == 0.12.2',
+		'flask-socketio   >=2.7.0',
+
 		'PyYAML           == 3.12',
 		'python-dotenv    == 0.7.1',
 		'coloredlogs      == 7.3',
 		'pybars3          == 0.9.3',
+		'pydash           == 4.2.1',
+
 		# 'arrow           ==0.10.0',
-		# 'pydash          ==4.1.0',
 
 		# 'simplejson       == 3.11.1',
 		# 'pony             == 0.7.2',

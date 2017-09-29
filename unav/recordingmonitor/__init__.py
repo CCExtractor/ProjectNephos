@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import dotenv
 
 from .version import __version__
 from .version import __description__
@@ -21,7 +22,7 @@ __all__ = [
 ]
 
 
-def main():
+def create_app():
 
 	# ------------------------------------------------------------
 	# ARGS PARSE:
@@ -56,14 +57,18 @@ def main():
 		))
 		print('-' * 40)
 
-	prog = Application(
+	dotenv.load_dotenv('.env')
+
+	wapp = Application(
 		config_path=args.config_path,
 	)
-	prog.run()
+
+	return wapp
 
 
-def __main__():
-	main()
+def main():
+	wapp = create_app()
+	wapp.run()
 
 
 if __name__ == '__main__':

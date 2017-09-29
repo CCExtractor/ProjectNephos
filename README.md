@@ -68,6 +68,8 @@ To create new package run:
 python setup.py sdist
 ```
 
+The result -- `unav-recordingmonitor-X.Y.Z.tar.gz` file in the `/dist` folder.
+
 ### Build new Docker image
 
 You need to have targzipped package in the `/dist` folder (see _Publish new
