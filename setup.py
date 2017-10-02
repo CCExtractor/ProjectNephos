@@ -102,7 +102,10 @@ setup(
 
 	install_requires=[
 		'flask            == 0.12.2',
-		'flask-socketio   >=2.7.0',
+		'APScheduler      == 3.3.1',
+		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
+		'flask-restful    >= 0.3.6',
+		'flask-socketio   >= 2.7.0',
 
 		'PyYAML           == 3.12',
 		'python-dotenv    == 0.7.1',

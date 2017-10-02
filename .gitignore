@@ -15,6 +15,7 @@
 /.cache/
 /*egg-info/
 
+/build/*
 /dist/*
 
 # ====================
@@ -27,3 +28,5 @@
 # Private stuff:
 
 .env
+devstart.py
+recordingmonitor.sqlite

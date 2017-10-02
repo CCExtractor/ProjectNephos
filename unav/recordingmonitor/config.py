@@ -12,7 +12,7 @@ from .env import cwd
 log = logging.getLogger(__name__)
 
 
-class Cfg:
+class Config:
 	"""
 	Configuration loading
 
@@ -27,12 +27,14 @@ class Cfg:
 	3. default values
 	"""
 
-	def __init__(self, flask_config, config_path=None):
+	__KEY_NOT_EXISTS = {'__KEY_NOT_EXISTS': -1231211}
+
+	def __init__(self, config_path=None):
 
 		self._version = None
 		self._data = {}
 		dd = self._data
-		dd['FLASK'] = flask_config
+		dd['FLASK'] = {}
 
 		_.merge(dd, yaml.load(_get_default_yaml()))
 
@@ -56,7 +58,7 @@ class Cfg:
 		for stg, val in eover.items():
 			_.set_(dd, stg, val)
 
-		_.defaults_deep(dd, {'log': {'version': 1}})
+		self.apply_defaults('log.version', 1)
 
 		# CONFIGURE LOGGING:
 		logging.config.dictConfig(dd['log'])
@@ -70,11 +72,11 @@ class Cfg:
 		log.info('DONE, you should have one message per enabled severity')
 
 	def get(self, key, default=None):
-		return _.get(self, key, default=default)
+		return _.get(self._data, key, default=default)
 
 	def __getitem__(self, key):
 		try:
-			return super().__getitem__(key)
+			return self._data[key]
 		except KeyError:
 			pass
 
@@ -84,6 +86,17 @@ class Cfg:
 			raise KeyError(key)
 
 		return res
+
+	def apply_defaults(self, path, val):
+		if path is None:
+			path = ''
+
+		try:
+			subcfg = self[path]
+			_.defaults_deep(subcfg, val)
+		except KeyError:
+			# key not found, create a new branch in config:
+			_.set_(self._data, path, val)
 
 	def _gather_from_environment(self):
 		values = {}
@@ -122,12 +135,12 @@ log:
       class: logging.StreamHandler
       formatter: colored
       stream: ext://sys.stdout
-      level: INFO
+      level: NOTSET
     file:
       class: logging.FileHandler
       formatter: simple
       filename: recordingmonitor.log
-      level: INFO
+      level: NOTSET
   root:
     level: NOTSET
     handlers:
