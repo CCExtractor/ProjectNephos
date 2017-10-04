@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import blinker
 import logging
 
 from .config import Config
 from .version import __title__
 from .version import __release__
 
-from .tasks import TaskRunner
+from .worker import ScheduledWorker
 from .web import WebServer
-#from .db import DB
+from .models.db import DB
 
 log = logging.getLogger(__name__)
 
@@ -25,14 +26,15 @@ class Application:
 		#log.info('Connecting to DB..')
 		#self.db = DB.init(CONFIG['db'])
 
-		self.tasks = TaskRunner(self.config)
+		self.tasks = ScheduledWorker(self.config)
 		self.web = WebServer(self.config)
 
+		DB.init_app(self.web)
+		self.db = DB
+
+		blinker.signal('app.initialized').send(self)
+		log.info('Application initialized')
+
 	def run(self):
-
-		self.tasks.add_job()
-
 		self.tasks.run()
 		self.web.run()
-
-

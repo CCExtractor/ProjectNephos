@@ -6,6 +6,7 @@ import logging.config
 
 import yaml
 import pydash as _
+from sqlalchemy.engine.url import URL
 
 from .env import cwd
 
@@ -54,6 +55,7 @@ class Config:
 			log.debug('There is NO config file, continue using defaults and env')
 			print('There is NO config file, continue using defaults and env')
 
+		# LOAD ENVIRONMENT:
 		eover = self._gather_from_environment()
 		for stg, val in eover.items():
 			_.set_(dd, stg, val)
@@ -70,6 +72,13 @@ class Config:
 		log.error('error')
 		log.critical('critical')
 		log.info('DONE, you should have one message per enabled severity')
+
+		# move connection string to expected place
+		dbconfig = self.get('db.connection')
+		if dbconfig is not None:
+			self.connection_string = dbconfig
+
+		log.debug('main database: %s', self.connection_string)
 
 	def get(self, key, default=None):
 		return _.get(self._data, key, default=default)
@@ -114,6 +123,20 @@ class Config:
 
 		return values
 
+	# helpers
+	@property
+	def connection_string(self):
+		return self.get('FLASK.SQLALCHEMY_DATABASE_URI')
+
+	@connection_string.setter
+	def connection_string(self, value):
+		if isinstance(value, dict):
+			dburl = URL(**value)
+		else:
+			dburl = str(value)
+
+		_.set_(self._data, 'FLASK.SQLALCHEMY_DATABASE_URI', dburl)
+
 
 def _get_default_yaml():
 	return '''---
@@ -121,6 +144,20 @@ FLASK:
   DEBUG: False
   JSON_AS_ASCII: False
   JSONIFY_PRETTYPRINT_REGULAR: False
+
+  SQLALCHEMY_TRACK_MODIFICATIONS: False
+
+
+db:
+  connection:
+    drivername:  'sqlite'
+    database:    'recordingmonitor.sqlite'
+
+    # drivername:  'postgres'
+    # username:    'postgres'
+    # password:    'postgres'
+    # host:        'db.sqlite'
+    # port:        5432
 
 log:
   disable_existing_loggers: True

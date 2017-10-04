@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from flask import Flask
 from .api import api_blueprint
 
-import logging
 log = logging.getLogger(__name__)
 
 

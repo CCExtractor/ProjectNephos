@@ -101,10 +101,14 @@ setup(
 	test_suite='pytest',
 
 	install_requires=[
+		'blinker          >= 1.4,      < 1.4.99',
 		'flask            == 0.12.2',
 		'APScheduler      == 3.3.1',
 		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
-		'flask-restful    >= 0.3.6',
+		'Flask-SQLAlchemy >= 2.3.0,    < 2.3.99',
+
+		#'flask-restful    >= 0.3.6     < 0.3.99',
+		'flask-restplus   >= 0.10.1,   < 0.10.99',
 		'flask-socketio   >= 2.7.0',
 
 		'PyYAML           == 3.12',
@@ -112,8 +116,8 @@ setup(
 		'coloredlogs      == 7.3',
 		'pybars3          == 0.9.3',
 		'pydash           == 4.2.1',
+		'arrow            >= 0.10.0,   < 0.10.99',
 
-		# 'arrow           ==0.10.0',
 
 		# 'simplejson       == 3.11.1',
 		# 'pony             == 0.7.2',

@@ -18,11 +18,11 @@ from apscheduler.triggers.date import DateTrigger
 log = logging.getLogger(__name__)
 
 
-class TaskRunner:
-	def __init__(self, app):
+class ScheduledWorker:
+	def __init__(self, app_config):
 
 		jobstores = {
-			'default': SQLAlchemyJobStore(url='sqlite:///recordingmonitor.sqlite')
+			'default': SQLAlchemyJobStore(url=app_config.connection_string)
 		}
 		executors = {
 			'default': ProcessPoolExecutor(5),
