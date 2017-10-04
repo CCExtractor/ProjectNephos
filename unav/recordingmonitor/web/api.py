@@ -2,7 +2,7 @@
 
 import logging
 from flask import Blueprint
-from flask import json
+# from flask import json
 
 from flask_restful import Resource
 from flask_restful import Api
@@ -12,6 +12,11 @@ from flask_restful import fields
 
 import arrow
 
+from ._utils import marshal_nullable_with
+
+from ..models.jobs import Job
+from ..errors import ValidationError
+
 log = logging.getLogger(__name__)
 
 api_blueprint = Blueprint('api', __name__)
@@ -20,7 +25,7 @@ api = Api(api_blueprint)
 
 # output
 job_fields = {
-	'id': fields.String,
+	'ID': fields.String,
 	'name': fields.String,
 	'date_from': fields.DateTime(dt_format='iso8601'),
 	'date_trim': fields.DateTime(dt_format='iso8601'),
@@ -48,26 +53,32 @@ class JobsListResource(Resource):
 	parser.add_argument('extra', type=as_is)
 	parser.add_argument('template_name')
 
-	@marshal_with(job_fields)
+	@marshal_with(job_fields, envelope='data')
 	def get(self):
-		return [
-			{'hello': 'world'}
-		]
+		jjs = Job.query.all()
+
+		return jjs
 
 	# CREATE JOB
-	@marshal_with(job_fields)
+	@marshal_with(job_fields, envelope='data')
 	def post(self):
 		args = self.parser.parse_args()
 		log.debug('job create, args: %s', args)
 
+		now = arrow.get()
+		if args.date_from < now and args.date_trim < now:
+			raise ValidationError('Seems like task is in the past')
 
-		return {
-			'id': 100,
-			'name': args.name,
-			'date_from': args.date_from,
-			'date_trim': args.date_trim,
-			'template_name': args.template_name,
-		}
+		jj = Job()
+		jj.name = args.name
+		jj.date_from = args.date_from
+		jj.date_trim = args.date_trim
+		jj.template_name = args.template_name
+		jj.extra = args.extra
+
+		jj.save()
+
+		return jj
 
 
 api.add_resource(JobsListResource, '/jobs')
@@ -75,12 +86,11 @@ api.add_resource(JobsListResource, '/jobs')
 
 class JobsResource(Resource):
 
-	@marshal_with(job_fields)
-	def get(self, id):
-		return {
-			'id': id,
-			'name': 'horse',
-		}
+	@marshal_nullable_with(job_fields, envelope='data')
+	def get(self, ID):
+		jj = Job.query.filter_by(ID=ID).first()
+
+		return jj
 
 
-api.add_resource(JobsResource, '/jobs/<int:id>')
+api.add_resource(JobsResource, '/jobs/<string:ID>')

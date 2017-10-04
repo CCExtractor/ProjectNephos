@@ -12,3 +12,8 @@ class BaseError(Exception):
 			"type": getFullTypeName(self),
 			"message": str(self),
 		}
+
+
+class ValidationError(BaseError):
+	def __init__(self, msg):
+		super().__init__(msg)

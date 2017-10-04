@@ -187,9 +187,7 @@ log:
     unav.recordingmonitor:
       level: NOTSET
 
-    pony.orm.sql:
-      level: WARNING
-    pony.orm:
-      level: WARNING
+    sqlalchemy:
+      level: INFO  # NOTSET
 ...
 '''  # noqa: E101
