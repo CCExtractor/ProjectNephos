@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 import logging
 
 import pytz
@@ -27,6 +28,8 @@ from apscheduler.events import EVENT_JOB_ERROR
 # EVENT_JOB_ERROR	A job raised an exception during execution	JobExecutionEvent
 # EVENT_JOB_MISSED	A job’s execution was missed	JobExecutionEvent
 # EVENT_ALL	A catch-all mask that includes every event type
+
+from .errors import HandleJobError
 
 log = logging.getLogger(__name__)
 
@@ -66,6 +69,9 @@ def broadcasting(event):
 
 
 class ScheduledWorker:
+
+	__re_clean = re.compile('[^-_\w\d]', flags=re.A | re.I)
+
 	def __init__(self, app_config):
 
 		jobstores = {
@@ -93,6 +99,7 @@ class ScheduledWorker:
 			timezone=pytz.utc,
 		)
 
+		self.__app_config = app_config
 		# .. do something else here, maybe add jobs etc.
 
 	def run(self):
@@ -134,17 +141,36 @@ class ScheduledWorker:
 		# 	replace_existing=False,
 		# 	**trigger_args
 		# )
-		func = 'unav.recordingmonitor.jobtemplates.{tpl}'.format(
-			tpl=template_name
-		)
 
+		tpl_name = self.__re_clean.sub('', template_name)
+
+		if tpl_name:
+			tpl_path = 'jobs.templates.{}'.format(tpl_name)
+			job_type_path = 'jobs.templates.{}.type'.format(tpl_name)
+
+			log.debug('creating a job using a template [%s]', tpl_path)
+			tpl_params = self.__app_config.get(tpl_path)
+			job_type = self.__app_config.get(job_type_path)
+		else:
+			job_type = None
+
+		if not job_type:
+			log.error('Job with unknown template [%s] requested', tpl_name)
+			raise HandleJobError(
+				'Job with unknown template',
+				template_name=tpl_name
+			)
+
+		fn_name = 'unav.recordingmonitor.jobtemplates.{}:start'.format(job_type)
 		trig = DateTrigger(run_date=date_from)
-
 		missfire_sec = int((date_trim - date_from).total_seconds())
 
+		# IMPORTANT: must be serializable!
+		all_job_args = [job_info_id, tpl_params, job_params]
+
 		sj = self._scheduler.add_job(
-			func,
-			args=[job_info_id, job_params],
+			fn_name,
+			args=all_job_args,
 			trigger=trig,
 			name=str(job_info_id),
 			misfire_grace_time=missfire_sec,

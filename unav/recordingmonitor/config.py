@@ -150,6 +150,15 @@ FLASK:
 scheduler:
   process_limit: 10
 
+jobs:
+  templates:
+    # Template for a 'demo' job:
+    demo:
+      type: scripttpl
+      script:
+        - echo "{message}"
+        - date +%s
+
 db:
   connection:
     drivername:  'sqlite'
