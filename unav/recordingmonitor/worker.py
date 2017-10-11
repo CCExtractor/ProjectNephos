@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import datetime
 import logging
 
 import pytz
@@ -11,15 +10,12 @@ from apscheduler.executors.pool import ProcessPoolExecutor
 
 from apscheduler.triggers.date import DateTrigger
 
-# from apscheduler.schedulers.background import BackgroundScheduler
-# from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-# from apscheduler.executors.pool import ProcessPoolExecutor
-
 # EVENTS
 from apscheduler.events import EVENT_JOB_ADDED
 from apscheduler.events import EVENT_JOB_SUBMITTED
 from apscheduler.events import EVENT_JOB_MODIFIED
 from apscheduler.events import EVENT_JOB_EXECUTED
+from apscheduler.events import EVENT_JOB_ERROR
 
 # EVENT_ALL_JOBS_REMOVED	All jobs were removed from either all job stores or one particular job store	SchedulerEvent
 # EVENT_JOB_ADDED	A job was added to a job store	JobEvent
@@ -76,7 +72,7 @@ class ScheduledWorker:
 			'default': SQLAlchemyJobStore(url=app_config.connection_string)
 		}
 		executors = {
-			'default': ProcessPoolExecutor(5),
+			'default': ProcessPoolExecutor(app_config.get('scheduler.process_limit')),
 		}
 		job_defaults = {
 			'coalesce': False,
@@ -87,7 +83,7 @@ class ScheduledWorker:
 
 		s.add_listener(
 			broadcasting,
-			EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED | EVENT_JOB_EXECUTED
+			EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
 		)
 
 		self._scheduler.configure(
@@ -121,7 +117,7 @@ class ScheduledWorker:
 		'''
 		return self._scheduler.get_jobs()
 
-	def job_add(self, jobname, template_name, date_from, date_trim):
+	def job_add(self, job_info_id, template_name, date_from, date_trim, job_params=None):
 		# add_job(
 		# 	func,
 		# 	trigger=None,
@@ -138,73 +134,22 @@ class ScheduledWorker:
 		# 	replace_existing=False,
 		# 	**trigger_args
 		# )
+		func = 'unav.recordingmonitor.jobtemplates.{tpl}'.format(
+			tpl=template_name
+		)
 
 		trig = DateTrigger(run_date=date_from)
 
 		missfire_sec = int((date_trim - date_from).total_seconds())
 
 		sj = self._scheduler.add_job(
-			tastss,
+			func,
+			args=[job_info_id, job_params],
 			trigger=trig,
-			name=str(jobname),
+			name=str(job_info_id),
+			misfire_grace_time=missfire_sec,
 			coalesce=True,
 			replace_existing=True,
-			misfire_grace_time=missfire_sec,
 		)
 
 		return sj
-
-
-import os
-from subprocess import Popen, PIPE
-
-
-class RunningProgram:
-	def __init__(self):
-		self.err = None
-		self.out = None
-		self.pid = None
-		self.rc = None
-
-	def __str__(self):
-		return '<RunningProg, \n\terr={err}\n\tout={out}\n\tpid={pid}\n\trc={rc}\n'.format(
-			err=self.err,
-			out=self.out,
-			pid=self.pid,
-			rc=self.rc,
-		)
-
-
-def tastss():
-	cmd = ['ping', '127.0.0.1', '-c', '3']
-
-	cmd = [str(i) for i in cmd]
-
-	log.debug('run task %s', cmd)
-
-	prg = RunningProgram()
-	pr = None
-
-	try:
-		pr = Popen(cmd, shell=False, stdout=PIPE, stderr=PIPE)
-		(prg.out, prg.err) = pr.communicate()
-
-		prg.out = prg.out.decode()
-		prg.err = prg.err.decode()
-
-		prg.ret = pr.returncode
-		prg.pid = pr.pid
-	except OSError as e:
-		if e.errno == os.errno.ENOENT:
-			# probably, executable not found..
-			raise Exception('This executable was not found: [{0}]'.format(cmd[0]))
-		else:
-			# Something else went wrong while trying to run the command..
-			raise
-
-	if prg.err:
-		prg.err = prg.err.strip()
-
-	log.info('task stopped %s', prg)
-
-	return prg

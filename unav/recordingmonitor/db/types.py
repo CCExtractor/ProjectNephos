@@ -1,26 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import uuid
+# just a convenient way to import simplejson with fallback to python.json
 from flask import json
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData
 
 from sqlalchemy.types import TypeDecorator, CHAR, VARCHAR, JSON
 from sqlalchemy.dialects.postgresql import UUID as postgreUUID
 from sqlalchemy.dialects.postgresql import JSON as postgreJSON
-
-
-import uuid
-
-convention = {
-	'ix': 'ix_%(table_name)s_%(column_0_label)s',
-	'uq': 'uq_%(table_name)s_%(column_0_name)s',
-	'ck': 'ck_%(table_name)s_%(constraint_name)s',
-	'fk': 'fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s',
-	'pk': 'pk_%(table_name)s',
-}
-metadata = MetaData(naming_convention=convention)
-
-DB = SQLAlchemy(metadata=metadata)
 
 
 class TypeUuid(TypeDecorator):
@@ -92,29 +78,3 @@ class TypeJson(TypeDecorator):
 			if value is not None:
 				value = json.loads(value)
 		return value
-
-
-# class TimestampMixin(object):
-# 	created = db.Column(
-# 		db.DateTime, nullable=False, default=datetime.utcnow)
-# 	updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
-
-
-class IdIntegerMixin:
-	ID = DB.Column(DB.Integer, primary_key=True)
-
-	def __repr__(self):
-		return '<{cls} {ID}>'.format(
-			cls=type(self).__name__,
-			ID=self.ID,
-		)
-
-
-class IdGuidMixin:
-	ID = DB.Column(TypeUuid, primary_key=True, default=uuid.uuid4)
-
-	def __repr__(self):
-		return '<{cls} {ID}>'.format(
-			cls=type(self).__name__,
-			ID=self.ID,
-		)

@@ -10,6 +10,9 @@ from .version import __release__
 from .worker import ScheduledWorker
 from .web import OurFlask
 from .db import DB
+from .db import WEBDB
+
+from .logger import connect_db_handler
 
 log = logging.getLogger(__name__)
 
@@ -17,22 +20,29 @@ log = logging.getLogger(__name__)
 class Application:
 
 	def __init__(self, config_path=None):
-
 		# logging will be configured in Cfg constructor
 		self.config = Config(config_path)
 
 		log.info('Starting %s [%s]', __title__, __release__)
 
+		DB.init(self.config.connection_string)
+		self.db = DB
+
+		DB.create_all()
+		log.info('* DB ready')
+
+		connect_db_handler()
+
 		self.web = OurFlask(self.config)
 		self.web.a = self
 		log.info('* WEB SERVER ready')
 
-		DB.init_app(self.web)
-		self.db = DB
+		WEBDB.init_app(self.web)
+		self.webdb = WEBDB
 
 		# create all tables
-		DB.create_all(app=self.web)
-		log.info('* DB ready')
+		WEBDB.create_all(app=self.web)
+		log.info('* WEBDB ready')
 
 		self.scheduler = ScheduledWorker(self.config)
 		log.info('* SCHEDULER ready')

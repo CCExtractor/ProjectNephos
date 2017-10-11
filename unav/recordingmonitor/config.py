@@ -147,6 +147,8 @@ FLASK:
 
   SQLALCHEMY_TRACK_MODIFICATIONS: False
 
+scheduler:
+  process_limit: 10
 
 db:
   connection:

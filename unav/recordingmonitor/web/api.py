@@ -14,8 +14,7 @@ import arrow
 
 from ._utils import marshal_nullable_with
 
-from ..models.jobs import Job
-from ..errors import ValidationError
+from ..models.jobs import JobInfo
 
 log = logging.getLogger(__name__)
 
@@ -50,12 +49,12 @@ class JobsListResource(Resource):
 	parser.add_argument('name')
 	parser.add_argument('date_from', type=to_datetime)
 	parser.add_argument('date_trim', type=to_datetime)
-	parser.add_argument('extra', type=as_is)
+	parser.add_argument('job_params', type=as_is)
 	parser.add_argument('template_name')
 
 	@marshal_with(job_fields, envelope='data')
 	def get(self):
-		jjs = Job.query.all()
+		jjs = JobInfo.query.all()
 
 		return jjs
 
@@ -65,16 +64,12 @@ class JobsListResource(Resource):
 		args = self.parser.parse_args()
 		log.debug('job create, args: %s', args)
 
-		now = arrow.get()
-		if args.date_from < now and args.date_trim < now:
-			raise ValidationError('Seems like task is in the past')
-
-		jj = Job()
+		jj = JobInfo()
 		jj.name = args.name
-		jj.date_from = args.date_from
+		jj.date_from = arrow.now().shift(seconds=3).datetime  #   args.date_from
 		jj.date_trim = args.date_trim
 		jj.template_name = args.template_name
-		jj.extra = args.extra
+		jj.job_params = args.job_params
 
 		jj.save()
 
@@ -88,7 +83,7 @@ class JobsResource(Resource):
 
 	@marshal_nullable_with(job_fields, envelope='data')
 	def get(self, ID):
-		jj = Job.query.filter_by(ID=ID).first()
+		jj = JobInfo.query.filter_by(ID=ID).first()
 
 		return jj
 
