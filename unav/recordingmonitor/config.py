@@ -138,6 +138,8 @@ class Config:
 		_.set_(self._data, 'FLASK.SQLALCHEMY_DATABASE_URI', dburl)
 
 
+# so the first task would be record for example from TVE1 from 15:00 to 15:45 (server local time, which is UTC+1 I think)
+
 def _get_default_yaml():
 	return '''---
 FLASK:
@@ -148,6 +150,7 @@ FLASK:
   SQLALCHEMY_TRACK_MODIFICATIONS: False
 
 scheduler:
+  # tz: utc
   process_limit: 10
 
 jobs:
@@ -156,6 +159,19 @@ jobs:
     demo:
       type: scripttpl
       script:
+        - echo "{message}"
+        - date +%s
+
+    capture:
+      type: scripttpl
+
+      parameters:
+        port:
+          type: int
+          default: 1234
+
+      main: nc -l -u {port} | tee tmpstream
+      after_main:
         - echo "{message}"
         - date +%s
 

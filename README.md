@@ -31,6 +31,17 @@ Having image locally you can run a container:
 Some settings can be set through environment variables. But it is possible to
 mount configuration file from host-machine.
 
+## Setup
+
+### Time zone
+
+Time zone could be set in the configuration property `scheduler.tz` with
+fallback to `'utc'` time zone.
+
+Applicable values are described in the documentation for PyTZ module:
+
+http://pythonhosted.org/pytz/
+
 ## Development
 
 Enable virtualenv:

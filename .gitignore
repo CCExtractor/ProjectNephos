@@ -1,7 +1,8 @@
 # ====================
-# Logs:
+# Logs and temporary stuff
 
 /recordingmonitor.log
+/var/
 
 # ====================
 # Deps:

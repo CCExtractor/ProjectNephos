@@ -12,8 +12,6 @@ from .web import OurFlask
 from .db import DB
 from .db import WEBDB
 
-from .logger import connect_db_handler
-
 log = logging.getLogger(__name__)
 
 
@@ -26,12 +24,8 @@ class Application:
 		log.info('Starting %s [%s]', __title__, __release__)
 
 		DB.init(self.config.connection_string)
-		self.db = DB
-
 		DB.create_all()
 		log.info('* DB ready')
-
-		connect_db_handler()
 
 		self.web = OurFlask(self.config)
 		self.web.a = self

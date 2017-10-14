@@ -8,8 +8,6 @@ import traceback
 
 from .models.logs import TaskLogRecord
 
-job_log = logging.getLogger('{0}.{1}'.format(__name__, 'job'))
-
 
 class SQLAlchemyHandler(logging.Handler):
 	# A very basic logger that commits a LogRecord to the SQL Db
@@ -82,17 +80,3 @@ class ExtendExtraLogAdapter(logging.LoggerAdapter):
 
 		kwargs['extra'] = kw
 		return msg, kwargs
-
-
-def get_job_logger(job_info_id, job_template_name):
-	la = ExtendExtraLogAdapter(job_log, {
-		'job_info_id': job_info_id,
-		'job_template_name': job_template_name,
-		# 'command': None
-	})
-	return la
-
-
-def connect_db_handler():
-	h = SQLAlchemyHandler()
-	job_log.addHandler(h)

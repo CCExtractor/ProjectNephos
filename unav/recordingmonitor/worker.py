@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 import re
 import logging
 
-import pytz
+from pytz import timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -29,6 +31,7 @@ from apscheduler.events import EVENT_JOB_ERROR
 # EVENT_JOB_MISSED	A job’s execution was missed	JobExecutionEvent
 # EVENT_ALL	A catch-all mask that includes every event type
 
+from .env import cwd
 from .errors import HandleJobError
 
 log = logging.getLogger(__name__)
@@ -86,6 +89,7 @@ class ScheduledWorker:
 		}
 		s = BackgroundScheduler()
 		self._scheduler = s
+		self.tz = timezone(app_config.get('scheduler.tz', 'utc'))
 
 		s.add_listener(
 			broadcasting,
@@ -96,11 +100,10 @@ class ScheduledWorker:
 			jobstores=jobstores,
 			executors=executors,
 			job_defaults=job_defaults,
-			timezone=pytz.utc,
+			timezone=self.tz,
 		)
 
 		self.__app_config = app_config
-		# .. do something else here, maybe add jobs etc.
 
 	def run(self):
 		self._scheduler.start()
@@ -162,11 +165,24 @@ class ScheduledWorker:
 			)
 
 		fn_name = 'unav.recordingmonitor.jobtemplates.{}:start'.format(job_type)
+
 		trig = DateTrigger(run_date=date_from)
 		missfire_sec = int((date_trim - date_from).total_seconds())
 
+		job_dir = os.path.join(cwd(), 'var', 'jobs', str(job_info_id))
+
+		job_meta = {
+			'job_id': job_info_id,
+			'job_date_from': date_from,
+			'job_date_trim': date_trim,
+			'job_dir': job_dir,
+			'job_rmdir': True,
+
+			'connection_string': self.__app_config.connection_string,
+		}
+
 		# IMPORTANT: must be serializable!
-		all_job_args = [job_info_id, tpl_params, job_params]
+		all_job_args = [job_meta, tpl_params, job_params]
 
 		sj = self._scheduler.add_job(
 			fn_name,

@@ -38,8 +38,11 @@ def to_datetime(string):
 	return d.datetime
 
 
-def as_is(arg):
-	return arg
+def to_dict(arg):
+	if arg is None:
+		return None
+
+	return dict(arg)
 
 
 class JobsListResource(Resource):
@@ -49,8 +52,8 @@ class JobsListResource(Resource):
 	parser.add_argument('name')
 	parser.add_argument('date_from', type=to_datetime)
 	parser.add_argument('date_trim', type=to_datetime)
-	parser.add_argument('job_params', type=as_is)
 	parser.add_argument('template_name')
+	parser.add_argument('job_params', type=to_dict)
 
 	@marshal_with(job_fields, envelope='data')
 	def get(self):
@@ -66,8 +69,9 @@ class JobsListResource(Resource):
 
 		jj = JobInfo()
 		jj.name = args.name
-		# DEBUG jj.date_from = arrow.now().shift(seconds=3).datetime
 		jj.date_from = args.date_from
+		# DEBUG
+		jj.date_from = arrow.now().shift(seconds=3).datetime
 		jj.date_trim = args.date_trim
 		jj.template_name = args.template_name
 		jj.job_params = args.job_params
