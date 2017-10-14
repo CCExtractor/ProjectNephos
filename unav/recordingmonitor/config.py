@@ -158,7 +158,8 @@ jobs:
     # Template for a 'demo' job:
     demo:
       type: scripttpl
-      script:
+
+      after:
         - echo "{message}"
         - date +%s
 
@@ -169,11 +170,28 @@ jobs:
         port:
           type: int
           default: 1234
+        host:
+          type: str
+          default: localhost
+        ftp_host:
+          type: str
+          default: ftp.com
+        ftp_user:
+          type: str
+          default: user
+        ftp_password:
+          type: str
+          default: password
 
-      main: nc -l -u {port} | tee tmpstream
-      after_main:
+      main:
+        cmd: nc -l -u {host} {port}
+        out: captured.mp4
+      after:
         - echo "{message}"
-        - date +%s
+        # send with FTP:
+        - curl -T captured.mp4 ftp://{ftp_host} --user {ftp_user}:{ftp_password}
+        - cmd: date +%s
+          out: dt.txt
 
 db:
   connection:
@@ -215,6 +233,8 @@ log:
       level: NOTSET
 
     sqlalchemy:
-      level: INFO  # NOTSET
+      level: ERROR # INFO  # NOTSET
+    werkzeug:
+      level: NOTSET # ERROR
 ...
 '''  # noqa: E101

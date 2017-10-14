@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# logging to sqlalchemy
-# https://docs.pylonsproject.org/projects/pyramid-cookbook/en/latest/logging/sqlalchemy_logger.html
-
 import logging
 import traceback
 
@@ -10,7 +7,14 @@ from .models.logs import TaskLogRecord
 
 
 class SQLAlchemyHandler(logging.Handler):
-	# A very basic logger that commits a LogRecord to the SQL Db
+	'''
+	A very basic logger that commits a LogRecord to the SQL Db
+	logging to sqlalchemy
+
+	.. seealso::
+		https://docs.pylonsproject.org/projects/pyramid-cookbook/en/latest/logging/sqlalchemy_logger.html
+
+	'''
 	def emit(self, record):
 
 		dd = dict(record.__dict__)

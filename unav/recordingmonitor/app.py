@@ -14,6 +14,8 @@ from .db import WEBDB
 
 log = logging.getLogger(__name__)
 
+#DEBUG
+#from .jobtemplates.scripttpl import TemplatedScriptJob
 
 class Application:
 

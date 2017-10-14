@@ -19,6 +19,8 @@ class JobInfo(MixinIdGuid, WEBDB.Model):
 	job_params = WEBDB.Column(TypeJson)
 	job_id = WEBDB.Column(WEBDB.String(96))
 
+	DURATION_SEC_MAX = 8 * 60 * 60
+
 	def __init__(self):
 		super().__init__()
 
@@ -29,6 +31,17 @@ class JobInfo(MixinIdGuid, WEBDB.Model):
 		now = arrow.get()
 		if self.date_from < now and self.date_trim < now:
 			raise ValidationError('Cannot add a Job in the past')
+
+		duration_sec = (self.date_trim - self.date_from).total_seconds()
+
+		if duration_sec < 2:
+			raise ValidationError('Job is too short')
+
+		if duration_sec > self.DURATION_SEC_MAX:
+			raise ValidationError('Job is too long: {}sec > {}sec'.format(
+				duration_sec,
+				self.DURATION_SEC_MAX
+			))
 
 	def save(self):
 

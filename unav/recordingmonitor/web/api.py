@@ -70,9 +70,12 @@ class JobsListResource(Resource):
 		jj = JobInfo()
 		jj.name = args.name
 		jj.date_from = args.date_from
+		jj.date_trim = args.date_trim
+
 		# DEBUG
 		jj.date_from = arrow.now().shift(seconds=3).datetime
-		jj.date_trim = args.date_trim
+		jj.date_trim = arrow.now().shift(seconds=13).datetime
+
 		jj.template_name = args.template_name
 		jj.job_params = args.job_params
 
