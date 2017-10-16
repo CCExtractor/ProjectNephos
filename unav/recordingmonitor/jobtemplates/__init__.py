@@ -1,10 +1,21 @@
 # -*- coding: utf-8 -*-
 
+'''
+jobtemplates
+
+This folder contains template-handlers for jobs.
+
+.. warning::
+
+	JOB will be run in separated processes!
+
+'''
+
 import os
 import shutil
 import logging
 
-from ..db import DB
+from ..db import get_session
 
 from ..logger import SQLAlchemyHandler
 from ..logger import ExtendExtraLogAdapter
@@ -13,14 +24,14 @@ log = logging.getLogger(__name__)
 joblog = logging.getLogger('{0}.{1}'.format(__name__, 'job'))
 
 
-def get_adapted_logger(job_info_id, job_template_name):
+def get_adapted_logger(db_session, job_info_id, job_template_name):
 	la = ExtendExtraLogAdapter(joblog, {
 		'job_info_id': job_info_id,
 		'job_template_name': job_template_name,
 		# 'command': None
 	})
 
-	h = SQLAlchemyHandler()
+	h = SQLAlchemyHandler(db_session)
 	joblog.addHandler(h)
 
 	return la
@@ -38,6 +49,7 @@ class BaseJob:
 
 	def __init__(self):
 		self.log = None
+		self.session = None
 
 	def __call__(self, job_meta, tpl_params, job_params):
 
@@ -50,9 +62,8 @@ class BaseJob:
 		# IMPORTANT: it POPS connection string!
 		connection_string = job_meta.pop('connection_string')
 
-		self.db = DB
-		self.db.init(connection_string)
-		self.log = get_adapted_logger(job_id, self.template_name)
+		self.session = get_session(connection_string)
+		self.log = get_adapted_logger(self.session, job_id, self.template_name)
 
 		log.debug('Job [%s] Dir: [%s]', job_id, job_dir)
 

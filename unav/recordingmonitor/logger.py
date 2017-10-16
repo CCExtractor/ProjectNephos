@@ -15,6 +15,11 @@ class SQLAlchemyHandler(logging.Handler):
 		https://docs.pylonsproject.org/projects/pyramid-cookbook/en/latest/logging/sqlalchemy_logger.html
 
 	'''
+	def __init__(self, db_session):
+		super().__init__()
+
+		self.db_session = db_session
+
 	def emit(self, record):
 
 		dd = dict(record.__dict__)
@@ -67,7 +72,8 @@ class SQLAlchemyHandler(logging.Handler):
 
 		log = TaskLogRecord(**qw)
 
-		log.save()
+		self.db_session.add(log)
+		self.db_session.commit()
 
 
 class ExtendExtraLogAdapter(logging.LoggerAdapter):

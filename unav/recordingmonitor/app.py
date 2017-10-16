@@ -9,13 +9,18 @@ from .version import __release__
 
 from .worker import ScheduledWorker
 from .web import OurFlask
-from .db import DB
-from .db import WEBDB
+# from .db import DB
+# from .db import WEBDB
 
 log = logging.getLogger(__name__)
 
 #DEBUG
-#from .jobtemplates.scripttpl import TemplatedScriptJob
+from .jobtemplates.scripttpl import TemplatedScriptJob
+
+
+from .db import FlaskSQLAlchemy
+from .models.base import Model
+
 
 class Application:
 
@@ -25,20 +30,24 @@ class Application:
 
 		log.info('Starting %s [%s]', __title__, __release__)
 
-		DB.init(self.config.connection_string)
-		DB.create_all()
-		log.info('* DB ready')
-
 		self.web = OurFlask(self.config)
-		self.web.a = self
+		self.web.app = self
 		log.info('* WEB SERVER ready')
 
-		WEBDB.init_app(self.web)
-		self.webdb = WEBDB
+		db = FlaskSQLAlchemy(model_class=Model)
+		self.db = db
+		self.web.db = db
 
-		# create all tables
-		WEBDB.create_all(app=self.web)
-		log.info('* WEBDB ready')
+		db.init_app(self.web)        # connect Flask and Flask-SqlAlchemy
+		db.create_all(app=self.web)  # create DB schema
+		log.info('* DB ready')
+
+		# WEBDB.init_app(self.web)
+		# self.webdb = WEBDB
+
+		# # create all tables
+		# WEBDB.create_all(app=self.web)
+		# log.info('* WEBDB ready')
 
 		self.scheduler = ScheduledWorker(self.config)
 		log.info('* SCHEDULER ready')

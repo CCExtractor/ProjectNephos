@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 VERSION = (0, 0, 2)
-VERSION_SUFFIX = ''
+VERSION_SUFFIX = 'dev.1'
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX

@@ -1,33 +1,33 @@
 # -*- coding: utf-8 -*-
 
 import arrow
+import sqlalchemy as sa
 
-from ..db import WEBDB
-from ..db import MixinIdGuid
+from .base import Model
+from ..db.mixins import MixinIdGuid
 from ..db.types import TypeJson
 # from ..db import TypeJson
 
 from ..errors import ValidationError
 
 
-class JobInfo(MixinIdGuid, WEBDB.Model):
+class JobInfo(MixinIdGuid, Model):
 
-	name = WEBDB.Column(WEBDB.String(1200))
-	date_from = WEBDB.Column(WEBDB.DateTime)
-	date_trim = WEBDB.Column(WEBDB.DateTime)
-	template_name = WEBDB.Column(WEBDB.String(4800))
-	job_params = WEBDB.Column(TypeJson)
-	job_id = WEBDB.Column(WEBDB.String(96))
+	__tablename__ = 'job_info'
+
+	name = sa.Column(sa.String(1200))
+	date_from = sa.Column(sa.DateTime)
+	date_trim = sa.Column(sa.DateTime)
+	template_name = sa.Column(sa.String(4800))
+	job_params = sa.Column(TypeJson)
+	job_id = sa.Column(sa.String(96))
 
 	DURATION_SEC_MAX = 8 * 60 * 60
 
 	def __init__(self):
 		super().__init__()
 
-	def get_app(self):
-		return WEBDB.get_app().a
-
-	def _validate(self):
+	def validate(self):
 		now = arrow.get()
 		if self.date_from < now and self.date_trim < now:
 			raise ValidationError('Cannot add a Job in the past')
@@ -42,25 +42,3 @@ class JobInfo(MixinIdGuid, WEBDB.Model):
 				duration_sec,
 				self.DURATION_SEC_MAX
 			))
-
-	def save(self):
-
-		self._validate()
-
-		if self.ID is None:
-			WEBDB.session.add(self)
-		WEBDB.session.commit()
-
-		# create/recreate scheduler task:
-		sc = self.get_app().scheduler
-
-		sj = sc.job_add(
-			job_info_id=self.ID,
-			template_name=self.template_name,
-			date_from=self.date_from,
-			date_trim=self.date_trim,
-			job_params=self.job_params,
-		)
-
-		self.job_id = sj.id
-		WEBDB.session.commit()

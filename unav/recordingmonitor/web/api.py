@@ -3,6 +3,7 @@
 import logging
 from flask import Blueprint
 # from flask import json
+from flask import current_app
 
 from flask_restful import Resource
 from flask_restful import Api
@@ -67,21 +68,33 @@ class JobsListResource(Resource):
 		args = self.parser.parse_args()
 		log.debug('job create, args: %s', args)
 
-		jj = JobInfo()
-		jj.name = args.name
-		jj.date_from = args.date_from
-		jj.date_trim = args.date_trim
+		ji = JobInfo()
+		ji.name = args.name
+		ji.date_from = args.date_from
+		ji.date_trim = args.date_trim
 
 		# DEBUG
-		jj.date_from = arrow.now().shift(seconds=3).datetime
-		jj.date_trim = arrow.now().shift(seconds=13).datetime
+		ji.date_from = arrow.now().shift(seconds=3).datetime
+		ji.date_trim = arrow.now().shift(seconds=13).datetime
 
-		jj.template_name = args.template_name
-		jj.job_params = args.job_params
+		ji.template_name = args.template_name
+		ji.job_params = args.job_params
 
-		jj.save()
+		ji.validate()
 
-		return jj
+		db = current_app.db
+		sched = current_app.app.scheduler
+
+		db.session.add(ji)
+		# REQUIRED! only after commit ji will have a real ID
+		db.session.commit()
+
+		sj = sched.job_add(ji)
+
+		ji.job_id = sj.id
+		db.session.commit()
+
+		return ji
 
 
 api.add_resource(JobsListResource, '/jobs')

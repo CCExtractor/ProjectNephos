@@ -80,6 +80,8 @@ class ScheduledWorker:
 		jobstores = {
 			'default': SQLAlchemyJobStore(url=app_config.connection_string)
 		}
+
+		# we are going to decode-encode video streams. That is why ProcessPool utilized.
 		executors = {
 			'default': ProcessPoolExecutor(app_config.get('scheduler.process_limit')),
 		}
@@ -127,23 +129,25 @@ class ScheduledWorker:
 		'''
 		return self._scheduler.get_jobs()
 
-	def job_add(self, job_info_id, template_name, date_from, date_trim, job_params=None):
-		# add_job(
-		# 	func,
-		# 	trigger=None,
-		# 	args=None,
-		# 	kwargs=None,
-		# 	id=None,
-		# 	name=None,
-		# 	misfire_grace_time=undefined,
-		# 	coalesce=undefined,
-		# 	max_instances=undefined,
-		# 	next_run_time=undefined,
-		# 	jobstore='default',
-		# 	executor='default',
-		# 	replace_existing=False,
-		# 	**trigger_args
-		# )
+	def job_add(self, job_info_model):
+		'''
+		Add a job to scheduler
+
+		[description]
+		:param job_info: Job information
+		:type job_info: ~.models.jobs.JobInfo
+		:returns: scheduler job
+		:rtype: apscheduler.job.Job
+		:raises: HandleJobError
+		'''
+
+		ji = job_info_model
+
+		job_info_id = ji.ID
+		template_name = ji.template_name
+		date_from = ji.date_from
+		date_trim = ji.date_trim
+		job_params = ji.job_params
 
 		tpl_name = self.__re_clean.sub('', template_name)
 
@@ -183,6 +187,23 @@ class ScheduledWorker:
 
 		# IMPORTANT: must be serializable!
 		all_job_args = [job_meta, tpl_params, job_params]
+
+		# add_job(
+		# 	func,
+		# 	trigger=None,
+		# 	args=None,
+		# 	kwargs=None,
+		# 	id=None,
+		# 	name=None,
+		# 	misfire_grace_time=undefined,
+		# 	coalesce=undefined,
+		# 	max_instances=undefined,
+		# 	next_run_time=undefined,
+		# 	jobstore='default',
+		# 	executor='default',
+		# 	replace_existing=False,
+		# 	**trigger_args
+		# )
 
 		sj = self._scheduler.add_job(
 			fn_name,

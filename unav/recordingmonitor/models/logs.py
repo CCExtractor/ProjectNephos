@@ -4,10 +4,12 @@
 # https://docs.pylonsproject.org/projects/pyramid-cookbook/en/latest/logging/sqlalchemy_logger.html
 
 import arrow
+import sqlalchemy as sa
 from sqlalchemy.sql import func
 
-from ..db import DB
-from ..db import MixinIdGuid2
+#from ..db import DB
+from .base import Model
+from ..db.mixins import MixinIdGuid
 from ..db.types import TypeJson
 from ..db.types import TypeUuid
 
@@ -16,19 +18,20 @@ from ..db.types import TypeUuid
 # 	return arrow.utcnow().datetime
 
 
-class TaskLogRecord(MixinIdGuid2, DB.Model):
+class TaskLogRecord(MixinIdGuid, Model):
+
 	__tablename__ = 'task_log_record'
 
-	logger = DB.Column(DB.String)
-	level = DB.Column(DB.String)
-	trace = DB.Column(DB.String)
-	message = DB.Column(DB.String)
+	logger = sa.Column(sa.String)
+	level = sa.Column(sa.String)
+	trace = sa.Column(sa.String)
+	message = sa.Column(sa.String)
 
-	job_info_id = DB.Column(TypeUuid)
-	job_template_name = DB.Column(DB.String)
-	data = DB.Column(TypeJson)
+	job_info_id = sa.Column(TypeUuid)
+	job_template_name = sa.Column(sa.String)
+	data = sa.Column(TypeJson)
 
-	ts = DB.Column(DB.TIMESTAMP, default=func.now())
+	ts = sa.Column(sa.TIMESTAMP, default=func.now())
 
 	def __init__(
 		self,
@@ -62,12 +65,3 @@ class TaskLogRecord(MixinIdGuid2, DB.Model):
 			ts=self.ts.isoformat(),
 			msgCut=self.message[:50]
 		)
-
-	def save(self):
-		s = DB.session
-		s.add(self)
-		s.commit()
-
-	def find(self, filt):
-		s = DB.session
-		s.query(TaskLogRecord).all()
