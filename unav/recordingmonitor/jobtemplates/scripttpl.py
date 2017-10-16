@@ -51,13 +51,21 @@ class StreamWrapper:
 		if code == 'NONE':
 			self.fd = DEVNULL
 			self.way = 'DEVNULL'
+			self._way_h = ' > /dev/null'
+
 		elif code == 'PIPE':
 			self.fd = PIPE
 			self.way = 'PIPE'
+			self._way_h = ' | cat'
+
 		else:
 			self.path = os.path.join(cwd, name)
 			self.safe = True
 			self.way = 'FILE<{}>'.format(name)
+			self._way_h = ' > {}'.format(name)
+
+	def human_str(self):
+		return self._way_h
 
 	def __enter__(self):
 		if self.safe:
@@ -88,6 +96,19 @@ class OneCommand:
 		self.timeout = timeout_sec
 
 		self.out = StreamWrapper(self.job_dir, prm.get('out'))
+
+	def human_str(self):
+		tm = ''
+		if self.timeout is not None:
+			tm = '# with timeout {} sec run:\n'.format(self.timeout)
+
+		res = '{tm}{cmd}{out}'.format(
+			tm=tm,
+			cmd=self.command,
+			out=self.out.human_str(),
+		)
+
+		return res
 
 	def run(self):
 
@@ -193,9 +214,18 @@ class TemplatedScriptJob(BaseJob):
 				cc = OneCommand(after_cmd_params, job_params_dict, log=self.log)
 				self._commands_to_run.append(cc)
 
+		self.log.info('Script for job is done', extra={
+			'command': self.human_str(),
+		})
+
 	def _run(self):
 		for c in self._commands_to_run:
 			c.run()
+
+	def human_str(self):
+		return '\n\n'.join([
+			cmd.human_str() for cmd in self._commands_to_run
+		])
 
 	def run(self, tpl_params, job_params):
 		self._config(tpl_params, job_params)
