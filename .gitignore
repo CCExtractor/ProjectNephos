@@ -31,5 +31,3 @@
 .env
 devstart.py
 recordingmonitor.sqlite
-
-client
