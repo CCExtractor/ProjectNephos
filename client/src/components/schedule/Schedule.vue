@@ -43,7 +43,7 @@
 					</div>
 				</modal>
  -->
- 				<create-job ref="createJobModal" @create="asdf"></create-job>
+ 				<create-job ref="createJobModal" @create="createNewJob"></create-job>
 			</div>
 		</div>
 	</div>
@@ -89,8 +89,8 @@
 			showCreateJobModal () {
 				this.$refs.createJobModal.open()
 			},
-			asdf(xx) {
-				console.log(xx)
+			createNewJob(job_info) {
+				console.log(job_info)
 			}
 		},
 		mounted () {
