@@ -9,16 +9,18 @@ import router from './router'
 import { sync } from 'vuex-router-sync'
 import VuesticPlugin from 'src/components/vuestic-components/vuestic-components-plugin'
 
+Vue.use(VuesticPlugin)
+Vue.use(BootstrapVue)
+
 import 'element-ui/lib/theme-default/index.css'
 import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
 Vue.use(ElementUI, { locale })
 
-Vue.use(VuesticPlugin)
-Vue.use(BootstrapVue)
-
 // NOTE: workaround for VeeValidate + vuetable-2
 Vue.use(VeeValidate, {fieldsBagName: 'formFields'})
+
+// Vue.http.options.root = 'http://example.com'
 
 sync(store, router)
 

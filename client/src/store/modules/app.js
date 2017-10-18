@@ -6,9 +6,9 @@ const state = {
 		withoutAnimation: false
 	},
 	config: {
-		googleMaps: {
-			apiKey: 'AIzaSyBNAqPrTQoz9P4NBlDDyfxrnKiafkaL8iQ'
-		},
+		// googleMaps: {
+		// 	apiKey: 'AIzaSyBNAqPrTQoz9P4NBlDDyfxrnKiafkaL8iQ'
+		// },
 		windowMatchSizeLg: '(min-width: 992px)',
 		palette: {
 			primary: '#4ae387',
@@ -21,7 +21,8 @@ const state = {
 			fontColor: '#34495e',
 			transparent: 'transparent',
 			lighterGray: '#ddd'
-		}
+		},
+		apiRoot: 'http://127.0.0.1:5000/api/v0',
 	},
 	isLoading: true
 }

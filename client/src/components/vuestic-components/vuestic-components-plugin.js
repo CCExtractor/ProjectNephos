@@ -16,6 +16,8 @@ import Tabs from 'src/components/vuestic-components/vuestic-tabs/VuesticTabs.vue
 import Widget from 'src/components/vuestic-components/vuestic-widget/VuesticWidget.vue'
 import Wizard from 'src/components/vuestic-components/vuestic-wizard/VuesticWizard.vue'
 
+import BadgeColumn from 'src/components/vuestic-components/vuestic-datatable/BadgeColumn.vue'
+
 const VuesticComponentsPlugin = {
 	install (Vue, /*options*/) {
 		Vue.component(Alert.name, Alert)
@@ -35,6 +37,8 @@ const VuesticComponentsPlugin = {
 		Vue.component(Tabs.name, Tabs)
 		Vue.component(Widget.name, Widget)
 		Vue.component(Wizard.name, Wizard)
+
+		Vue.component(BadgeColumn.name, BadgeColumn)
 	}
 }
 

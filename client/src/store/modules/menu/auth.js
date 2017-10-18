@@ -1,6 +1,3 @@
-/**
- * Created by yarik on 18.7.17.
- */
 import lazyLoading from './lazyLoading'
 
 export default {

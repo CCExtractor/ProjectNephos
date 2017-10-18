@@ -15,8 +15,10 @@ const store = new Vuex.Store({
 		menu,
 		app
 	},
-	state: {},
-	mutations: {}
+	state: {
+		notifications: [],
+	},
+	mutations: {},
 })
 
 export default store

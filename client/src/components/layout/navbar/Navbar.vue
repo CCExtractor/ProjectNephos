@@ -19,6 +19,7 @@
 			</div>
 
 			<div class="offset-lg-8"></div>
+<!--
 			<div class="col nav-item dropdown navbar-dropdown d-flex align-items-center justify-content-center" v-dropdown>
 				<a class="nav-link dropdown-toggle d-flex align-items-center justify-content" href="#" @click.prevent="closeMenu">
 					<span class="i-nav-messages notify"></span>
@@ -37,32 +38,41 @@
 					</div>
 				</div>
 			</div>
+-->
 			<div class="col nav-item dropdown navbar-dropdown d-flex align-items-center justify-content-center" v-dropdown>
 				<a class="nav-link dropdown-toggle d-flex align-items-center justify-content" href="#" @click.prevent="closeMenu">
-					<span class="i-nav-notification notify"></span>
+					<span class="i-nav-notification" v-bind:class="{'notify': isNotificationsPresent}"></span>
 				</a>
 				<div class="dropdown-menu">
 					<div class="dropdown-menu-content">
+						<template v-if="isNotificationsPresent">
 
-						<a class="dropdown-item" href="#">
-							<span class="ellipsis">Vasily S sent you a message</span>
-						</a>
-						<a class="dropdown-item" href="#">
-							<span class="ellipsis">Oleg M uploaded new Zip file with typography component</span>
-						</a>
-						<a class="dropdown-item" href="#">
-							<span class="ellipsis">Andrei H started a new topic</span>
-						</a>
-						<div class="dropdown-item plain-link-item">
-							<a class="plain-link" href="#">See all notifications</a>
-						</div>
+							<a v-for="notification in notifications" class="dropdown-item" href="#">
+								<span class="ellipsis">{{ notification.message }}</span>
+							</a>
+
+							<div class="dropdown-item plain-link-item">
+								<router-link to="/notifications" class="plain-link">See all notifications</router-link>
+							</div>
+
+						</template>
+						<template v-else>
+							<div class="dropdown-item plain-link-item">
+								<router-link to="/notifications" class="plain-link">
+									<strong>No</strong> notifications, see all?
+								</router-link>
+							</div>
+						</template>
 					</div>
 				</div>
 			</div>
 			<div class="col nav-item dropdown navbar-dropdown d-flex align-items-center justify-content-center" v-dropdown>
-				<a class="nav-link dropdown-toggle d-flex align-items-center justify-content" href="#" @click.prevent="closeMenu">
-					<span class="avatar-container">
-						<img src="http://i.imgur.com/nfa5itq.png" />
+				<a class="nav-link dropdown-toggle d-flex align-items-center justify-content text-center" href="#" @click.prevent="closeMenu">
+					<span class="avatar-container text-center">
+						<i class="fa fa-4x fa-user"></i>
+<!--
+ 						<img src="http://i.imgur.com/nfa5itq.png" />
+-->
 					</span>
 				</a>
 				<div class="dropdown-menu last">
@@ -91,10 +101,16 @@
 			dropdown: Dropdown
 		},
 
-		computed: mapGetters([
-			'sidebarOpened',
-			'toggleWithoutAnimation'
-		]),
+		computed: {
+			...mapGetters([
+				'sidebarOpened',
+				'toggleWithoutAnimation',
+			]),
+
+			isNotificationsPresent() {
+				return !! this.$store.notifications && this.$store.notifications.length
+			},
+		},
 		methods: {
 			...mapActions([
 				'closeMenu',

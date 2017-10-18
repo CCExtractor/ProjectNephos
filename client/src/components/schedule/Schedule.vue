@@ -4,70 +4,61 @@
 			<div class="col-md-12">
 				<vuestic-widget headerText="Create Job">
 					<div class="row">
-						<div class="col-sm-6 d-flex justify-content-center">
+						<div class="col-sm-6 d-flex">
 
 							<button
-								class="btn btn-primary btn-with-icon rounded-icon"
+								class="btn btn-primary btn-with-icon"
 								@click="showCreateJobModal()"
 								>
 
-
 								<div class="btn-with-icon-content">
-									<i class="entypo entypo-plus"></i>
+									<i class="fa-plus fa"></i>
+									Add Job
 								</div>
 							</button>
 						</div>
 					</div>
 				</vuestic-widget>
-<!-- 				<modal :show.sync="show" v-bind:large="true" ref="createJobModal" @ok="asdf">
-					<div slot="title">Create new Job</div>
-					<div>
-						<div>
-							Start at
-							<el-date-picker
-								v-model="date_from"
-								type="datetime"
-								placeholder="Select date and time">
-							</el-date-picker>
-						</div>
 
-						<div>
-							Stop at
-							<el-date-picker
-								v-model="date_trim"
-								type="datetime"
-								placeholder="Select date and time">
-							</el-date-picker>
-						</div>
-
-					</div>
-				</modal>
- -->
  				<create-job ref="createJobModal" @create="createNewJob"></create-job>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12">
+				<vuestic-widget headerText="Scheduled Jobs">
+					<vuestic-data-table
+						:apiUrl="job_meta.apiUrl"
+						:tableFields="job_meta.tableFields"
+						:itemsPerPage="job_meta.itemsPerPage"
+						:sortFunctions="job_meta.sortFunctions"
+						:apiMode="job_meta.apiMode"
+						:paginationPath="job_meta.paginationPath"
+						:perPageInitial="10">
+					</vuestic-data-table>
+				</vuestic-widget>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script>
-	import VuesticSwitch from '../../components/vuestic-components/vuestic-switch/VuesticSwitch'
-	import VuesticSimpleSelect from '../../components/vuestic-components/vuestic-simple-select/VuesticSimpleSelect'
-	import VuesticMultiSelect from '../../components/vuestic-components/vuestic-multi-select/VuesticMultiSelect'
-	import Widget from '../../components/vuestic-components/vuestic-widget/VuesticWidget'
-	import Modal from '../../components/vuestic-components/vuestic-modal/VuesticModal'
+	import Vue from 'vue'
+
+	import FieldsDef from './jobs-table/fields-definition'
+	import ItemsPerPageDef from './jobs-table/items-per-page-definition'
 
 	import CreateJob from './CreateJob'
+	import StateColumn from './jobs-table/StateColumn'
 	//import axios from 'axios'
+
+	Vue.component('state-column', StateColumn)
 
 	export default {
 		name: 'schedule',
 		components: {
-			VuesticSwitch,
-			VuesticSimpleSelect,
-			VuesticMultiSelect,
-			Widget,
-			Modal,
 			CreateJob,
+			StateColumn,
 		},
 		computed: {
 			isSuccessfulEmailValid () {
@@ -79,7 +70,17 @@
 			}
 		},
 		data () {
+			const apiRoot = this.$store.state.app.config.apiRoot
+
 			return {
+				job_meta: {
+					apiUrl: `${apiRoot}/jobs`,
+					apiMode: true,
+					tableFields: FieldsDef.tableFields,
+					itemsPerPage: ItemsPerPageDef.itemsPerPage,
+					sortFunctions: FieldsDef.sortFunctions,
+					paginationPath: ''
+				}
 			}
 		},
 		methods: {
