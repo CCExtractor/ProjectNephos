@@ -23,6 +23,14 @@ api_blueprint = Blueprint('api', __name__)
 api = Api(api_blueprint)
 
 
+try:
+	from flask_cors import CORS
+	CORS(api_blueprint)
+	log.warn('CORS enabled for API (DEBUG MODE)')
+except ImportError:
+	pass
+
+
 # output
 job_fields = {
 	'ID': fields.String,
