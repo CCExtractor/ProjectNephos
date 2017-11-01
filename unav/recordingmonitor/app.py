@@ -15,7 +15,7 @@ from .web import OurFlask
 log = logging.getLogger(__name__)
 
 #DEBUG
-from .jobtemplates.scripttpl import TemplatedScriptJob
+from .jobs.templates.scripttpl import TemplatedScriptJob
 
 
 from .db import FlaskSQLAlchemy

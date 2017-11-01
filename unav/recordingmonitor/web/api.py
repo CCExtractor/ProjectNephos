@@ -82,6 +82,11 @@ class JobsListResource(Resource):
 		ji.date_trim = args.date_trim
 
 		# DEBUG
+		print('!' * 40)
+		print('!' * 40)
+		print('DEBUG')
+		print('!' * 40)
+		print('!' * 40)
 		ji.date_from = arrow.now().shift(seconds=3).datetime
 		ji.date_trim = arrow.now().shift(seconds=13).datetime
 

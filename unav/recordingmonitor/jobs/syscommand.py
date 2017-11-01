@@ -6,39 +6,18 @@ import os
 import signal
 from logging import getLogger
 
-log = getLogger(__name__)
-
 from subprocess import Popen, TimeoutExpired
 from subprocess import DEVNULL, PIPE
 
-from . import BaseJob
+from ..errors import CommandError
+from ..utils.string import decode_and_superstrip
 
 
-def decode_and_superstrip(xx):
-	if xx is None:
-		return None
-
-	s = xx.decode()
-	if s:
-		s = s.strip()
-	if not s:
-		s = None
-
-	return s
-
-
-class DictFormatEmpty(dict):
-	def __missing__(self, key):
-		# return '{' + key + '}'
-		return ''
-
-
-def format_def(tpl, data):
-	return tpl.format_map(DictFormatEmpty(data))
+log = getLogger(__name__)
 
 
 class StreamWrapper:
-	def __init__(self, cwd, name, mode='w'):
+	def __init__(self, name, cwd=None, mode='w'):
 		self.safe = False
 		self.mode = mode
 		self.fd = None
@@ -59,12 +38,13 @@ class StreamWrapper:
 			self._way_h = ' | cat'
 
 		else:
-			self.path = os.path.join(cwd, name)
+			_cwd = cwd or ''
+			self.path = os.path.join(_cwd, name)
 			self.safe = True
 			self.way = 'FILE<{}>'.format(name)
 			self._way_h = ' > {}'.format(name)
 
-	def human_str(self):
+	def __str__(self):
 		return self._way_h
 
 	def __enter__(self):
@@ -80,24 +60,32 @@ class StreamWrapper:
 			self.fd.close()
 
 
-class OneCommand:
-	def __init__(self, cmd_params, job_params, timeout_sec=None, log=None):
-		self.log = log
-
-		prm = cmd_params
-		if isinstance(cmd_params, str):
-			prm = {
-				'cmd': cmd_params
-			}
-
-		cmd = prm.get('cmd')
-		self.command = format_def(cmd, job_params)
-		self.job_dir = job_params.get('job_dir')
+class Command:
+	def __init__(self, cmd, cwd='', out=None, timeout_sec=None, logger=None):
+		self.log = logger or log
+		self.command = cmd
+		self.cwd = cwd
 		self.timeout = timeout_sec
 
-		self.out = StreamWrapper(self.job_dir, prm.get('out'))
+		self.out = StreamWrapper(out, cwd=self.cwd)
 
-	def human_str(self):
+	# def __init__(self, cmd_params, job_params, timeout_sec=None, logger=None):
+	# 	self.log = logger or log
+
+	# 	prm = cmd_params
+	# 	if isinstance(cmd_params, str):
+	# 		prm = {
+	# 			'cmd': cmd_params
+	# 		}
+
+	# 	cmd = prm.get('cmd')
+	# 	self.command = format_with_emptydefault(cmd, job_params)
+	# 	self.job_dir = job_params.get('job_dir')
+	# 	self.timeout = timeout_sec
+
+	# 	self.out = StreamWrapper(prm.get('out'), cwd=self.job_dir)
+
+	def __str__(self):
 		tm = ''
 		if self.timeout is not None:
 			tm = '# with timeout {} sec run:\n'.format(self.timeout)
@@ -105,7 +93,7 @@ class OneCommand:
 		res = '{tm}{cmd}{out}'.format(
 			tm=tm,
 			cmd=self.command,
-			out=self.out.human_str(),
+			out=str(self.out),
 		)
 
 		return res
@@ -150,28 +138,32 @@ class OneCommand:
 		pid = None
 
 		with self.out as outfd:
-			# cpp = run(self.command, stdout=outfd, stderr=PIPE, cwd=self.job_dir, shell=True, timeout=self.timeout)
+			# cpp = run(self.command, stdout=outfd, stderr=PIPE, cwd=self.cwd, shell=True, timeout=self.timeout)
 
 			# preexec_fn=os.setsid
-			with Popen(self.command, stdout=outfd, stderr=PIPE, cwd=self.job_dir, shell=True, start_new_session=True) as process:
+			with Popen(self.command, stdout=outfd, stderr=PIPE, cwd=self.cwd, shell=True, start_new_session=True) as process:
 				pid = process.pid
 				try:
 					(out, err) = process.communicate(timeout=self.timeout)
-				except TimeoutExpired as exc:
+				except TimeoutExpired:  # as exc:
 					os.killpg(pid, signal.SIGINT)  # send signal to the process group
 					(out, err) = process.communicate()
 				rc = process.returncode
 
+		exc = None
 		out = decode_and_superstrip(out)
 		err = decode_and_superstrip(err)
 		if rc is not None:
 			rc = int(rc)
 
+		if err:
+			exc = CommandError(err)
+
 		prg = {
 			'out_way': self.out.way,
 			'out': out,
 			'err': err,
-			'rc': rc
+			'rc': rc,
 		}
 
 		if err:
@@ -185,51 +177,5 @@ class OneCommand:
 				extra={'command': self.command, 'result': prg}
 			)
 
-
-class TemplatedScriptJob(BaseJob):
-
-	def _config(self, tpl_params, job_params):
-		# print('R' * 80)
-		# print(tpl_params, job_params)
-		# print('-' * 50)
-		# print(job_params)
-		# print('R' * 80)
-
-		self._commands_to_run = []
-
-		job_params_dict = dict(job_params)
-
-		date_from = job_params.get('job_date_from')
-		date_trim = job_params.get('job_date_trim')
-		duration_sec = (date_trim - date_from).total_seconds()
-
-		main_cmd_params = tpl_params.get('main')
-		if main_cmd_params:
-			cc = OneCommand(main_cmd_params, job_params_dict, log=self.log, timeout_sec=duration_sec)
-			self._commands_to_run.append(cc)
-
-		after_cmd_list = tpl_params.get('after')
-		if after_cmd_list:
-			for after_cmd_params in after_cmd_list:
-				cc = OneCommand(after_cmd_params, job_params_dict, log=self.log)
-				self._commands_to_run.append(cc)
-
-		self.log.info('Script for job is done', extra={
-			'command': self.human_str(),
-		})
-
-	def _run(self):
-		for c in self._commands_to_run:
-			c.run()
-
-	def human_str(self):
-		return '\n\n'.join([
-			cmd.human_str() for cmd in self._commands_to_run
-		])
-
-	def run(self, tpl_params, job_params):
-		self._config(tpl_params, job_params)
-		self._run()
-
-
-start = TemplatedScriptJob()
+		prg['exc'] = exc
+		return prg

@@ -64,7 +64,15 @@ class FlaskSQLAlchemy(FlaskSQLAlchemyOriginal):
 
 
 def get_session(connection_string):
-	engine = create_engine(connection_string)
+	connect_args = None
+	print('connection_string', connection_string)
+	if connection_string.startswith('sqlite'):
+		connect_args = {'check_same_thread': False}
+
+	engine = create_engine(
+		connection_string,
+		connect_args=connect_args
+	)
 	# model = self.Model
 
 	# create session generator

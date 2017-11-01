@@ -4,14 +4,18 @@ import os
 
 import re
 import logging
+import datetime
 
 from pytz import timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ProcessPoolExecutor
+from apscheduler.executors.pool import ThreadPoolExecutor
 
 from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
 # EVENTS
 from apscheduler.events import EVENT_JOB_ADDED
@@ -32,12 +36,12 @@ from apscheduler.events import EVENT_JOB_ERROR
 # EVENT_ALL	A catch-all mask that includes every event type
 
 from .env import cwd
-from .errors import HandleJobError
+from .errors import ConfigureJobError
 
 log = logging.getLogger(__name__)
 
 
-def broadcasting(event):
+def event_broadcasting(event):
 	log.warn('SCHEDULER EVENT: %s // %s', event.code, event.job_id)
 	print(event)
 
@@ -77,13 +81,22 @@ class ScheduledWorker:
 
 	def __init__(self, app_config):
 
+		# config:
+		connection_string = app_config.connection_string
+		tz = app_config.get('scheduler.tz', 'utc')
+		jobs_limit = int(app_config.get('scheduler.jobsLimit', 10))
+		maintenance_jobs_limit = int(app_config.get('scheduler.maintenance.jobsLimit', 10))
+		maintenance_interval_min = int(app_config.get('scheduler.maintenance.interval', 30))
+
 		jobstores = {
-			'default': SQLAlchemyJobStore(url=app_config.connection_string)
+			'default': SQLAlchemyJobStore(url=connection_string),
+			'maintenance': MemoryJobStore(),
 		}
 
-		# we are going to decode-encode video streams. That is why ProcessPool utilized.
 		executors = {
-			'default': ProcessPoolExecutor(app_config.get('scheduler.process_limit')),
+			# we are going to decode-encode video streams. That is why ProcessPool utilized.
+			'default': ProcessPoolExecutor(jobs_limit),
+			'maintenance': ThreadPoolExecutor(maintenance_jobs_limit)
 		}
 		job_defaults = {
 			'coalesce': False,
@@ -91,10 +104,10 @@ class ScheduledWorker:
 		}
 		s = BackgroundScheduler()
 		self._scheduler = s
-		self.tz = timezone(app_config.get('scheduler.tz', 'utc'))
+		self.tz = timezone(tz)
 
 		s.add_listener(
-			broadcasting,
+			event_broadcasting,
 			EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
 		)
 
@@ -105,7 +118,53 @@ class ScheduledWorker:
 			timezone=self.tz,
 		)
 
+		# TODO: remove __app_config
 		self.__app_config = app_config
+
+		self._add_system_jobs(maintenance_interval_min)
+
+	def _add_system_jobs(self, interval_min):
+
+		job_types = [
+			'free_space',
+			'channel_on_air',
+		]
+
+		trig = IntervalTrigger(minutes=interval_min)
+
+		print('!' * 40)
+		print('!' * 40)
+		print('DEBUG')
+		print('!' * 40)
+		print('!' * 40)
+		trig = IntervalTrigger(
+			seconds=30,
+			start_date=datetime.datetime.now() + datetime.timedelta(seconds=2)
+		)
+
+		job_meta = {
+			'connection_string': self.__app_config.connection_string,
+		}
+		job_params = None
+
+		all_job_args = [job_meta, job_params]
+
+		for job_type in job_types:
+
+			fn = 'unav.recordingmonitor.jobs.maintenance.{}:start'.format(job_type)
+
+			self._scheduler.add_job(
+				fn,
+				trigger=trig,
+				args=all_job_args,
+				id=job_type,
+				name=job_type,
+				coalesce=True,
+				max_instances=1,
+				jobstore='maintenance',
+				executor='maintenance',
+				replace_existing=True,
+			)
 
 	def run(self):
 		self._scheduler.start()
@@ -127,7 +186,7 @@ class ScheduledWorker:
 		:returns: List of jobs
 		:rtype: list<Job>
 		'''
-		return self._scheduler.get_jobs()
+		return self._scheduler.get_jobs(jobstore='default')
 
 	def job_add(self, job_info_model):
 		'''
@@ -163,12 +222,12 @@ class ScheduledWorker:
 
 		if not job_type:
 			log.error('Job with unknown template [%s] requested', tpl_name)
-			raise HandleJobError(
+			raise ConfigureJobError(
 				'Job with unknown template',
 				template_name=tpl_name
 			)
 
-		fn_name = 'unav.recordingmonitor.jobtemplates.{}:start'.format(job_type)
+		fn_name = 'unav.recordingmonitor.jobs.templates.{}:start'.format(job_type)
 
 		trig = DateTrigger(run_date=date_from)
 		missfire_sec = int((date_trim - date_from).total_seconds())
@@ -207,11 +266,12 @@ class ScheduledWorker:
 
 		sj = self._scheduler.add_job(
 			fn_name,
-			args=all_job_args,
 			trigger=trig,
+			args=all_job_args,
 			name=str(job_info_id),
 			misfire_grace_time=missfire_sec,
 			coalesce=True,
+			jobstore='default',
 			replace_existing=True,
 		)
 

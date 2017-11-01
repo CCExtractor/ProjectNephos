@@ -15,10 +15,10 @@ import os
 import shutil
 import logging
 
-from ..db import get_session
+from ...db import get_session
 
-from ..logger import SQLAlchemyHandler
-from ..logger import ExtendExtraLogAdapter
+from ...logger import SQLAlchemyHandler
+from ...logger import ExtendExtraLogAdapter
 
 log = logging.getLogger(__name__)
 joblog = logging.getLogger('{0}.{1}'.format(__name__, 'job'))

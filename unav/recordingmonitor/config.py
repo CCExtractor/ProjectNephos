@@ -14,19 +14,22 @@ log = logging.getLogger(__name__)
 
 
 class Config:
-	"""
+	'''
 	Configuration loading
 
 	A private class, provides access to config of the application.
 
-	### Configuration options priority
+	Configuration options priority
+	------------------------------
 
 	Options could be loaded from many sources: env, config file, command line.
 	Here is a list of used priorities (the first found value take precedence):
+
 	1. environment variable
 	2. configuration file
 	3. default values
-	"""
+
+	'''
 
 	__KEY_NOT_EXISTS = {'__KEY_NOT_EXISTS': -1231211}
 
@@ -117,6 +120,7 @@ class Config:
 				if path.startswith('FLASK_'):
 					path = path.replace('FLASK_', 'FLASK.')
 				else:
+					# TODO: this works errorprone.. Example: log.disable_existing_loggers
 					path = path.replace('_', '.')
 
 				values[path] = os.environ[name]
@@ -126,12 +130,13 @@ class Config:
 	# helpers
 	@property
 	def connection_string(self):
-		return self.get('FLASK.SQLALCHEMY_DATABASE_URI')
+		cs = self.get('FLASK.SQLALCHEMY_DATABASE_URI')
+		return cs
 
 	@connection_string.setter
 	def connection_string(self, value):
 		if isinstance(value, dict):
-			dburl = URL(**value)
+			dburl = str(URL(**value))
 		else:
 			dburl = str(value)
 
@@ -150,8 +155,11 @@ FLASK:
   SQLALCHEMY_TRACK_MODIFICATIONS: False
 
 scheduler:
-  # tz: utc
-  process_limit: 10
+  tz: utc
+  jobsLimit: 10
+  maintenance:
+    jobsLimit: 10
+    interval: 30  # minutes
 
 jobs:
   templates:
@@ -199,10 +207,11 @@ db:
     database:    'recordingmonitor.sqlite'
 
     # drivername:  'postgres'
-    # username:    'postgres'
-    # password:    'postgres'
     # host:        'db.sqlite'
     # port:        5432
+    # database:    'recordingmonitor'
+    # username:    'recordingmonitor'
+    # password:    'recordingmonitor'
 
 log:
   disable_existing_loggers: True
