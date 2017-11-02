@@ -51,47 +51,34 @@ class BaseJob:
 		self.log = None
 		self.session = None
 
-	def __call__(self, job_meta, tpl_params, job_params):
+	def __call__(self, template_config, job_params):
 
-		job_id = job_meta['job_id']
+		job_id = job_params['job_id']
 		log.debug('Job [%s] preparing', job_id)
 
 		# TODO: remove job_dir from meta
-		job_dir = job_meta['job_dir']
+		job_dir = job_params['job_dir']
+		job_rmdir = job_params.get('job_rmdir', True)
+
 		# TODO: remove connection_string from meta
 		# IMPORTANT: it POPS connection string!
-		connection_string = job_meta.pop('connection_string')
+		connection_string = job_params.pop('connection_string')
 
 		self.session = get_session(connection_string)
 		self.log = get_adapted_logger(self.session, job_id, self.template_name)
 
 		log.debug('Job [%s] Dir: [%s]', job_id, job_dir)
-
-		eff_job_params = self._extend_job_params_with_defaults(
-			job_meta,
-			tpl_params,
-			job_params
-		)
-
 		os.makedirs(job_dir, exist_ok=True)
 
 		self.log.debug('Job [%s] starting [%s]', job_id, type(self))
-		res = self.run(tpl_params, eff_job_params)
+		res = self.run(template_config, job_params)
 		self.log.debug('Job [%s] ended [%s]', job_id, type(self))
 
-		if job_meta.get('job_rmdir', True):
+		if job_rmdir:
 			shutil.rmtree(job_dir)
 
 		log.debug('Job [%s] cleaned up', job_id)
 		return res
 
-	def _extend_job_params_with_defaults(self, job_meta, tpl_params, job_params):
-
-		p = dict()
-		p.update(job_meta)
-		p.update(job_params)
-
-		return p
-
-	def run(self, job_meta, tpl_params, job_params):
+	def run(self, template_config, job_params):
 		pass

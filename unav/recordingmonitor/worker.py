@@ -87,6 +87,7 @@ class ScheduledWorker:
 		jobs_limit = int(app_config.get('scheduler.jobsLimit', 10))
 		maintenance_jobs_limit = int(app_config.get('scheduler.maintenance.jobsLimit', 10))
 		maintenance_interval_min = int(app_config.get('scheduler.maintenance.interval', 30))
+		path_var = app_config.get('capture.paths.base')
 
 		jobstores = {
 			'default': SQLAlchemyJobStore(url=connection_string),
@@ -105,6 +106,7 @@ class ScheduledWorker:
 		s = BackgroundScheduler()
 		self._scheduler = s
 		self.tz = timezone(tz)
+		self.path_var = path_var
 
 		s.add_listener(
 			event_broadcasting,
@@ -142,12 +144,8 @@ class ScheduledWorker:
 			start_date=datetime.datetime.now() + datetime.timedelta(seconds=2)
 		)
 
-		job_meta = {
-			'connection_string': self.__app_config.connection_string,
-		}
-		job_params = None
-
-		all_job_args = [job_meta, job_params]
+		# TODO: it is not a good idea to pass the entire app_config to the job. But it's the fastest way for implementation
+		all_job_args = [self.__app_config]
 
 		for job_type in job_types:
 
@@ -215,7 +213,7 @@ class ScheduledWorker:
 			job_type_path = 'jobs.templates.{}.type'.format(tpl_name)
 
 			log.debug('creating a job using a template [%s]', tpl_path)
-			tpl_params = self.__app_config.get(tpl_path)
+			template_config = self.__app_config.get(tpl_path)
 			job_type = self.__app_config.get(job_type_path)
 		else:
 			job_type = None
@@ -232,9 +230,13 @@ class ScheduledWorker:
 		trig = DateTrigger(run_date=date_from)
 		missfire_sec = int((date_trim - date_from).total_seconds())
 
-		job_dir = os.path.join(cwd(), 'var', 'jobs', str(job_info_id))
+		job_dir = os.path.join(self.path_var, 'jobs', str(job_info_id))
 
-		job_meta = {
+		eff_job_params = {}
+		eff_job_params.update(job_params)
+
+		# predefined system params:
+		eff_job_params.update({
 			'job_id': job_info_id,
 			'job_date_from': date_from,
 			'job_date_trim': date_trim,
@@ -242,10 +244,10 @@ class ScheduledWorker:
 			'job_rmdir': True,
 
 			'connection_string': self.__app_config.connection_string,
-		}
+		})
 
 		# IMPORTANT: must be serializable!
-		all_job_args = [job_meta, tpl_params, job_params]
+		all_job_args = [template_config, eff_job_params]
 
 		# add_job(
 		# 	func,

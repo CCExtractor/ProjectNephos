@@ -32,7 +32,7 @@ class TemplatedScriptJob(BaseJob):
 		cc = Command(cmd, cwd=cwd, out=out, timeout_sec=timeout_sec, logger=self.log)
 		return cc
 
-	def _config(self, tpl_params, job_params):
+	def _config(self, template_config, job_params):
 		# print('R' * 80)
 		# print(tpl_params, job_params)
 		# print('-' * 50)
@@ -47,12 +47,12 @@ class TemplatedScriptJob(BaseJob):
 		date_trim = job_params.get('job_date_trim')
 		duration_sec = (date_trim - date_from).total_seconds()
 
-		main_cmd_params = tpl_params.get('main')
+		main_cmd_params = template_config.get('main')
 		if main_cmd_params:
 			command = self._create_command(main_cmd_params, job_params_dict, duration_sec)
 			self._commands_to_run.append(command)
 
-		after_cmd_list = tpl_params.get('after')
+		after_cmd_list = template_config.get('after')
 		if after_cmd_list:
 			for after_cmd_params in after_cmd_list:
 				command = self._create_command(after_cmd_params, job_params_dict)
@@ -71,8 +71,8 @@ class TemplatedScriptJob(BaseJob):
 			str(cmd) for cmd in self._commands_to_run
 		])
 
-	def run(self, tpl_params, job_params):
-		self._config(tpl_params, job_params)
+	def run(self, template_config, job_params):
+		self._config(template_config, job_params)
 		self._run()
 
 

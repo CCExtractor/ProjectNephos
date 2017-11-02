@@ -11,6 +11,7 @@ from subprocess import DEVNULL, PIPE
 
 from ..errors import CommandError
 from ..utils.string import decode_and_superstrip
+from ..utils.string import format_with_emptydefault
 
 
 log = getLogger(__name__)
@@ -101,7 +102,11 @@ class Command:
 	def run(self):
 
 		self.log.info('Command starting', extra={'command': self.command})
-
+		print('c' * 50)
+		print('c' * 50)
+		print(self.command)
+		print('c' * 50)
+		print('c' * 50)
 		# try:
 		# 	# pr = Popen(cmd, shell=False, stdout=PIPE, stderr=PIPE)
 		# 	# (prg.out, prg.err) = pr.communicate()
@@ -179,3 +184,34 @@ class Command:
 
 		prg['exc'] = exc
 		return prg
+
+
+class CaptureCommand(Command):
+	def __init__(self, channel_ip, ifaddr, cwd='', out=None, timeout_sec=None, logger=None):
+
+		if not isinstance(out, str):
+			raise ValueError('parameter `out` of CaptureCommand MUST be a string')
+
+		cmd = format_with_emptydefault('multicat -u @{channel_ip}/ifaddr={ifaddr} {out_file}', {
+			'channel_ip': channel_ip,
+			'ifaddr':     ifaddr,
+			'out_file':   out,
+		})
+
+		# print('*' * 40)
+		# print('*' * 40)
+		# print('DEBUG')
+		# print('*' * 40)
+		# print('*' * 40)
+		# cmd = format_with_emptydefault('nc {channel_ip} # {ts_file}', {
+		# 	'channel_ip': self.channel.ip_string,
+		# 	'ts_file': ts_file,
+		# })
+
+		super().__init__(
+			cmd=cmd,
+			cwd=cwd,
+			out=None,
+			timeout_sec=timeout_sec,
+			logger=logger,
+		)

@@ -13,15 +13,16 @@ import shutil
 import blinker
 
 
-def start(job_meta, job_params):
-	# print(job_meta)
-	# print('*' * 50)
-	# res = os.statvfs('/')
-	# print(res)
+def start(app_config):
+	config = {
+		'path': app_config.get('capture.paths.base')
+	}
 
-	print('*' * 50)
-	total, used, free = shutil.disk_usage('/')
+	total, used, free = shutil.disk_usage(config['path'])
 
-	print(total, used, free)
-	print('*' * 50)
-	blinker.signal('jobs.maintenance').send('free_space', )
+	blinker.signal('jobs.maintenance').send('free_space',
+		path=config['path'],
+		total=total,
+		used=used,
+		free=free,
+	)

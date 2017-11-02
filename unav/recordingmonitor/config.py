@@ -35,12 +35,15 @@ class Config:
 
 	def __init__(self, config_path=None):
 
+		path_var = os.path.join(cwd(), 'var')
+
 		self._version = None
 		self._data = {}
 		dd = self._data
 		dd['FLASK'] = {}
 
 		_.merge(dd, yaml.load(_get_default_yaml()))
+		_.set_(dd, 'capture.paths.base', path_var)
 
 		if config_path is None:
 			config_path = os.path.join(cwd(), 'recordingmonitor.yml')
@@ -147,6 +150,13 @@ class Config:
 
 def _get_default_yaml():
 	return '''---
+capture:
+  address: 127.0.0.2
+  # address: 159.237.36.240
+
+  paths:
+    base: 'overloaded-by-default-in-python'
+
 FLASK:
   DEBUG: False
   JSON_AS_ASCII: False

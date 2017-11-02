@@ -7,8 +7,9 @@ Check that all channels are on air
 import os
 import shutil
 import logging
-import datetime
 
+import arrow
+import pydash
 import uuid
 
 from ...env import cwd as get_cwd
@@ -16,71 +17,86 @@ from ...models.tv import Channel
 from ...models.tv import ChannelStatus
 from ...db import get_session
 #from ...errors import MaintenanceError
+from ...errors import BaseError
 
-from ...utils.string import format_with_emptydefault
+# from ...utils.string import format_with_emptydefault
 
 from ..syscommand import Command
+from ..syscommand import CaptureCommand
 
 
 log = logging.getLogger(__name__)
 
 
-# IP_IPTV="159.237.36.240"
+class StreamCorruptedError(BaseError):
+	pass
 
 
 class ChannelChecker:
-	def __init__(self, job_meta, job_params, channel, session):
-		self.meta = job_meta
-		self.pm = job_params
-		self.channel = channel
-		self.session = session
+	def __init__(self, app_config, channel_id):
 
-		self.id = str(uuid.uuid4())
+		# BUG: move to ./worker.py
+		self.path_var = app_config.get('capture.paths.base')
 
+		# TODO: use class, not type()
+		self.config = type('__internal_config', (), {})
+		# TODO: remove connection_string from meta
+		self.config.connection_string = app_config.connection_string
+		self.config.capture_address = app_config.get('capture.address')
+
+		self.channel_id = channel_id
+
+		self.ID = str(uuid.uuid4())
+
+		self.session = None
 		self.cd = None
-		self._channel_status = None
+		self.channel_status = None
 
 	def __enter__(self):
+
+		session = get_session(self.config.connection_string)
+		self.session = session
+
+		self.channel = session.query(Channel).get(self.channel_id)
 		log.info('start checking status of [%s]', self.channel.name)
-		session = self.session
+
+		cs = self.channel.channel_status
 
 		# 1 init status in DB (if not exist yet)
-		cs = self.channel.channel_status
 		if cs is None:
 			cs = ChannelStatus()
 			cs.channel = self.channel
 			session.add(cs)
 			session.commit()
-		self._channel_status = cs
+		self.channel_status = cs
 
 		# 2 create temporary dir
-		self.cd = os.path.join(get_cwd(), 'var', 'maintenance', 'channel_on_air', str(self.id))
+		self.cd = os.path.join(self.path_var, 'maintenance', 'channel_on_air', str(self.ID))
 		os.makedirs(self.cd)
 
 		return self
 
 	def __exit__(self, exc_type, exc_val, exc_tb):
 		session = self.session
-		print('*' * 40)
-		print('*' * 40)
-		print('DEBUG')
-		print('*' * 40)
-		print('*' * 40)
-		# shutil.rmtree(self.cd)
 
-		cs = self._channel_status
+		# 1 save state to DB
+		cs = self.channel_status
 
 		if exc_type is None:
 			cs.status = 'OK'
 			cs.error = None
 		else:
-			cs.status = exc_type.__name__
-			cs.error = str(exc_val)  # + str(exc_tb)
+			cs.status = pydash.get(exc_val, 'code', exc_type.__name__)
+			# not sure about trace... str(exc_tb)
+			cs.error = str(exc_val)
 
-		cs.ts = datetime.datetime.now()
+		cs.ts = arrow.get().datetime
 
 		session.add(cs)
 		session.commit()
+
+		# 2 rm temporary dir
+		shutil.rmtree(self.cd)
 
 		log.info('status of [%s] checked', self.channel.name)
 		return True
@@ -92,41 +108,32 @@ class ChannelChecker:
 		# CHECK CHANNEL
 		ts_file = os.path.join(self.cd, '{}.ts'.format(filename))
 
-		# TEST 1: multicat
-		cmd = format_with_emptydefault('multicat -u @{channel_ip}/ifaddr={iface} {ts_file}', {
-			'channel_ip': self.channel.ip_string,
-			'iface': 'eth0', # iface,
-			'ts_file': ts_file,
-		})
+		capture_cmd = CaptureCommand(
+			channel_ip=self.channel.ip_string,
+			ifaddr=self.config.capture_address,
+			cwd=self.cd,
+			out=ts_file,
+			timeout_sec=10,
+			logger=log,
+		)
+		capture_res = capture_cmd.run()
+		capture_exc = capture_res.get('exc')
 
-		print('*' * 40)
-		print('*' * 40)
-		print('DEBUG')
-		print('*' * 40)
-		print('*' * 40)
-		cmd = format_with_emptydefault('ping {channel_ip} # {ts_file}', {
-			'channel_ip': self.channel.ip_string,
-			'ts_file': ts_file,
-		})
-
-		multicat_cmd = Command(cmd=cmd, cwd=self.cd, out=ts_file, timeout_sec=10, logger=log)
-		multicat_res = multicat_cmd.run()
-		multicat_exc = multicat_res.get('exc')
-
-		if multicat_exc:
-			raise multicat_exc
+		if capture_exc:
+			raise capture_exc
 
 		# TEST 2: ffprobe
-		ffprobe_cmd = Command('ffprobe {}.ts'.format(filename), cwd=self.cd, out='PIPE', logger=log)
+		ffprobe_cmd = Command('ffprobe -loglevel error {}.ts'.format(filename), cwd=self.cd, out='PIPE', logger=log)
 		ffprobe_res = ffprobe_cmd.run()
 		ffprobe_exc = ffprobe_res.get('exc')
 		ffprobe_out = ffprobe_res.get('out')
+		ffprobe_rc = ffprobe_res.get('rc')
 
 		if ffprobe_exc:
 			raise ffprobe_exc
 
-		if not ffprobe_out.startswith('Input #0, mpegts'):
-			raise Exception('ffprobe: stream corrupted')
+		if ffprobe_rc:
+			raise StreamCorruptedError(ffprobe_out)
 
 		# TEST 3: ccexctractor
 		ccexctractor_cmd = Command('ccextractor -xmltv -out=null {}.ts'.format(filename), cwd=self.cd, logger=log)
@@ -136,11 +143,9 @@ class ChannelChecker:
 		if ccexctractor_exc:
 			raise ccexctractor_exc
 
-		# output from ccextractor
+		# output-file created by ccextractor:
 		epg_file = os.path.join(self.cd, '{}_epg.xml'.format(filename))
 
-		# TODO: upload:
-		#
 		cmd = '/usr/bin/curl -s -u novik:184412 -F do=upload -F "file_data=@${epg_file}" http://epgtests.xirvik.com/fm/'.format(
 			epg_file=epg_file,
 		)
@@ -151,19 +156,16 @@ class ChannelChecker:
 		if curl_exc:
 			raise curl_exc
 
-		return None
 
-
-def start(job_meta, job_params):
+def start(app_config):
 
 	# TODO: remove connection_string from meta
 	# IMPORTANT: it POPS connection string!
 	# connection_string = job_meta.pop('connection_string')
-	connection_string = job_meta['connection_string']
-
-	print('connection_string', connection_string)
+	connection_string = app_config.connection_string
 	session = get_session(connection_string)
+	ids = [channel.ID for channel in session.query(Channel)]
 
-	for ch in session.query(Channel):
-		with ChannelChecker(job_meta, job_params, ch, session) as checker:
+	for channel_id in ids:
+		with ChannelChecker(app_config, channel_id) as checker:
 			checker.check()
