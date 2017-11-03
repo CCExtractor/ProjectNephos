@@ -5,3 +5,4 @@ flake8
 mock
 pytest-cov
 flask-cors
+PyInstaller    >= 3.3

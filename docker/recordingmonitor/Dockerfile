@@ -10,7 +10,7 @@ RUN \
 VOLUME /var/recordingmonitor/data/
 
 RUN \
-	pip install /tmp/dist/unav-recordingmonitor-0.0.1.dev1.tar.gz && \
+	pip install /tmp/dist/unav-recordingmonitor-0.0.2.tar.gz && \
 	rm -r /tmp/dist/
 
 CMD ["gunicorn", "--workers=2", "unav.recordingmonitor:get_gunicorn_app"]

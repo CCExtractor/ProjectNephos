@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 VERSION = (0, 0, 2)
-VERSION_SUFFIX = 'dev.1'
+VERSION_SUFFIX = 'dev.3'
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX
@@ -107,8 +107,8 @@ setup(
 		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
 		'Flask-SQLAlchemy >= 2.3.0,    < 2.3.99',
 
-		#'flask-restful    >= 0.3.6     < 0.3.99',
-		'flask-restplus   >= 0.10.1,   < 0.10.99',
+		'flask-restful    >= 0.3.6,    < 0.3.99',
+		#'flask-restplus   >= 0.10.1,   < 0.10.99',
 		'flask-socketio   >= 2.7.0',
 
 		'PyYAML           == 3.12',

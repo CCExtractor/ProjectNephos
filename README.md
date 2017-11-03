@@ -15,7 +15,6 @@
 
 Script will create:
 
-- default config -- `recordingmonitor.yml`
 - DB for internal data -- `recordingmonitor.sqlite`
 
 They will contain configuration and running data of the application
@@ -86,6 +85,50 @@ The result -- `unav-recordingmonitor-X.Y.Z.tar.gz` file in the `/dist` folder.
 You need to have targzipped package in the `/dist` folder (see _Publish new
 version_ section of this guide)
 
+**!! don't forget trailing dot !!**
+
 ```
-docker build -f docker/Dockerfile -t unav/recordingmonitor:0.0.1 .
+docker build -f docker/recordingmonitor/Dockerfile -t unav/recordingmonitor .
+```
+
+### Build new PyInstaller bundle
+
+There are several steps:
+
+1. create package (any environment, this package is a pure python package)
+2. switch to the appropriate environment (CentOS-6 is good for unav.es)
+3. install this package `pip install unav-recordingmonitor-X.Y.Z.tar.gz`
+4. install `pip install PyInstaller`
+5. patches
+  1. fix APSchedule
+6. copy `/pyinstaller-entry` from this project
+7. run pyinstall
+8. tar-gzip the bundle
+9. distribute the gzipped bundle
+
+#### 5.1 fix apschedule
+
+Fix APschedule `__init__.py` (inside site-package), use this content:
+
+```python
+# These will be removed in APScheduler 4.0.
+# release = __import__('pkg_resources').get_distribution('APScheduler').version.split('-')[0]
+# version_info = tuple(int(x) if x.isdigit() else x for x in release.split('.'))
+# version = __version__ = '.'.join(str(x) for x in version_info[:3])
+
+release = "3.3.1cf" # __import__('pkg_resources').get_distribution('APScheduler').version.split('-')[0]
+version_info = "3.3.1cf" # tuple(int(x) if x.isdigit() else x for x in release.split('.'))
+version = __version__ = '.'.join(str(x) for x in version_info[:3])
+```
+
+#### 7 run pyinstall
+
+```
+PYTHONPATH=. pyinstaller --log-level=INFO pyinstaller/
+```
+
+#### 8 targz
+
+```
+tar --directory=dist -czf recordingmonitor.bundle.tgz ./recordingmonitor
 ```
