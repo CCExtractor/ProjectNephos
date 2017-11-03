@@ -42,7 +42,7 @@ log = logging.getLogger(__name__)
 
 
 def event_broadcasting(event):
-	log.warn('SCHEDULER EVENT: %s // %s', event.code, event.job_id)
+	log.debug('SCHEDULER EVENT: %s // %s', event.code, event.job_id)
 	print(event)
 
 	try:
@@ -132,16 +132,9 @@ class ScheduledWorker:
 			'channel_on_air',
 		]
 
-		trig = IntervalTrigger(minutes=interval_min)
-
-		print('!' * 40)
-		print('!' * 40)
-		print('DEBUG')
-		print('!' * 40)
-		print('!' * 40)
 		trig = IntervalTrigger(
-			seconds=30,
-			start_date=datetime.datetime.now() + datetime.timedelta(seconds=2)
+			minutes=interval_min,
+			start_date=datetime.datetime.now() + datetime.timedelta(seconds=5)
 		)
 
 		# TODO: it is not a good idea to pass the entire app_config to the job. But it's the fastest way for implementation

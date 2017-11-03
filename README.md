@@ -124,7 +124,9 @@ version = __version__ = '.'.join(str(x) for x in version_info[:3])
 #### 7 run pyinstall
 
 ```
-PYTHONPATH=. pyinstaller --log-level=INFO pyinstaller/
+pyinstaller -y --log-level=WARN pyinstaller/recordingmonitor.spec
+
+# pyinstaller -y --clean --specpath=pyinstaller --log-level=INFO pyinstaller/recordingmonitor.spec
 ```
 
 #### 8 targz
