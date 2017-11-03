@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 VERSION = (0, 0, 2)
-VERSION_SUFFIX = 'dev.3'
+VERSION_SUFFIX = 'dev.9'
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX
@@ -101,6 +101,7 @@ setup(
 	test_suite='pytest',
 
 	install_requires=[
+		'raven[flask]     >=6.3.0',
 		'blinker          >= 1.4,      < 1.4.99',
 		'flask            == 0.12.2',
 		'APScheduler      == 3.3.1',

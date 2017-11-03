@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import logging
 import logging.config
 
@@ -68,16 +69,15 @@ class Config:
 
 		self.apply_defaults('log.version', 1)
 
+		# ----------------------------------------------------------------------
 		# CONFIGURE LOGGING:
+		# ----------------------------------------------------------------------
 		logging.config.dictConfig(dd['log'])
 
-		log.info('TEST LOGGING')
-		log.debug('debug')
-		log.info('info')
-		log.warn('warn')
-		log.error('error')
-		log.critical('critical')
-		log.info('DONE, you should have one message per enabled severity')
+		self._reset_frozendebug()
+
+		if self.get('FLASK.DEBUG'):
+			self._test_logging()
 
 		# move connection string to expected place
 		dbconfig = self.get('db.connection')
@@ -129,6 +129,29 @@ class Config:
 				values[path] = os.environ[name]
 
 		return values
+
+	def _test_logging(self):
+		log.info('TEST LOGGING')
+		log.debug('debug')
+		log.info('info')
+		log.warn('warn')
+		log.error('error')
+		log.critical('critical')
+		log.info('DONE, you should have one message per enabled severity')
+
+	def _reset_frozendebug(self):
+		'''
+		disable FLASK DEBUG when the app is running in PyInstaller bundle.
+
+		When the app is running inside the PyInstaller environment it doesn't
+		make sense to reload app on changes in code (default Flask's behavior
+		in DEBUG mode).
+		'''
+		if getattr(sys, 'frozen', False):
+			# running in a bundle
+			if _.get(self._data, 'FLASK.DEBUG', False):
+				self._data['FLASK']['DEBUG'] = False
+				log.warn('FLASK.DEBUG was disabled for frozen environment')
 
 	# helpers
 	@property
@@ -222,6 +245,9 @@ db:
     # database:    'recordingmonitor'
     # username:    'recordingmonitor'
     # password:    'recordingmonitor'
+
+sentry:
+  dsn: null
 
 log:
   disable_existing_loggers: True
