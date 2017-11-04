@@ -41,18 +41,25 @@ Applicable values are described in the documentation for PyTZ module:
 
 http://pythonhosted.org/pytz/
 
+--------------------------------------------------------------------------------
+
 ## Development
+
+Create virtualenv (run once):
+
+```bash
+virtualenv env/recordingmonitor
+```
 
 Enable virtualenv:
 
-```
-virtualenv env/recordingmonitor
+```bash
 source env/recordingmonitor/bin/activate
 ```
 
 Install dev-dependencies:
 
-```
+```bash
 pip install -r requirements-dev.txt
 ```
 
@@ -70,7 +77,28 @@ Send to upstream:
 2. Push to your fork: `git push origin`
 3. Create PULL REQUEST and wait for acceptance!
 
-### Publish new version
+# Client UI
+
+Client UI is a Vue-application (javascript framework).
+
+To rebuild client UI you will need:
+
+1. Install *Node.JS* (version >= 4.0.0)
+2. go to sources (`cd client`) and install dependencies: `npm install`
+
+It is very useful to connect Python and JS parts by linking Vue-app as a static
+asset:
+
+```bash
+# run from the root folder of the local git-repo
+ln -r -s ./client/dist ./unav/recordingmonitor/web/ui/dist
+```
+
+--------------------------------------------------------------------------------
+
+## DEPLOYMENT
+
+### Create PyPI
 
 To create new package run:
 
@@ -80,31 +108,23 @@ python setup.py sdist
 
 The result -- `unav-recordingmonitor-X.Y.Z.tar.gz` file in the `/dist` folder.
 
-### Build new Docker image
-
-You need to have targzipped package in the `/dist` folder (see _Publish new
-version_ section of this guide)
-
-**!! don't forget trailing dot !!**
-
-```
-docker build -f docker/recordingmonitor/Dockerfile -t unav/recordingmonitor .
-```
-
 ### Build new PyInstaller bundle
 
 There are several steps:
 
-1. create package (any environment, this package is a pure python package)
-2. switch to the appropriate environment (CentOS-6 is good for unav.es)
-3. install this package `pip install unav-recordingmonitor-X.Y.Z.tar.gz`
-4. install `pip install PyInstaller`
-5. patches
+1. create package (see the previous chapter)
+2. move package to the appropriate environment (CentOS-6 is good for unav.es)
+
+Make next steps in the target environment (for example, CentOS)
+
+1. install package `pip install unav-recordingmonitor-X.Y.Z.tar.gz`
+2. install `pip install PyInstaller`
+3. patches
   1. fix APSchedule
-6. copy `/pyinstaller-entry` from this project
-7. run pyinstall
-8. tar-gzip the bundle
-9. distribute the gzipped bundle
+4. copy `/pyinstaller` from this project
+5. run pyinstall (see below)
+6. tar-gzip the bundle (see below)
+7. distribute the gzipped bundle
 
 #### 5.1 fix apschedule
 
@@ -121,9 +141,11 @@ version_info = "3.3.1cf" # tuple(int(x) if x.isdigit() else x for x in release.s
 version = __version__ = '.'.join(str(x) for x in version_info[:3])
 ```
 
+Original solution: https://github.com/agronholm/apscheduler/issues/158#issuecomment-299444402
+
 #### 7 run pyinstall
 
-```
+```bash
 pyinstaller -y --log-level=WARN pyinstaller/recordingmonitor.spec
 
 # pyinstaller -y --clean --specpath=pyinstaller --log-level=INFO pyinstaller/recordingmonitor.spec
@@ -131,6 +153,19 @@ pyinstaller -y --log-level=WARN pyinstaller/recordingmonitor.spec
 
 #### 8 targz
 
+```bash
+tar --directory=dist -czf recordingmonitor.bin.tgz ./recordingmonitor
 ```
-tar --directory=dist -czf recordingmonitor.bundle.tgz ./recordingmonitor
+
+--------------------------------------------------------------------------------
+
+## OPTIONAL: build new Docker image
+
+You need to have targzipped package in the `/dist` folder (see _Publish new
+version_ section of this guide)
+
+**!! don't forget trailing dot !!**
+
+```bash
+docker build -f docker/recordingmonitor/Dockerfile -t unav/recordingmonitor .
 ```

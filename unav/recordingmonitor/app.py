@@ -16,7 +16,7 @@ from .web import OurFlask
 
 log = logging.getLogger(__name__)
 
-#DEBUG
+# DEBUG
 from .jobs.templates.scripttpl import TemplatedScriptJob
 
 
@@ -53,13 +53,6 @@ class Application:
 			db.init_app(self.web)        # connect Flask and Flask-SqlAlchemy
 			db.create_all(app=self.web)  # create DB schema
 			log.info('* DB ready')
-
-			# WEBDB.init_app(self.web)
-			# self.webdb = WEBDB
-
-			# # create all tables
-			# WEBDB.create_all(app=self.web)
-			# log.info('* WEBDB ready')
 
 			self.scheduler = ScheduledWorker(self.config)
 			log.info('* SCHEDULER ready')

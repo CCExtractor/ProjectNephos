@@ -4,8 +4,8 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = (0, 0, 2)
-VERSION_SUFFIX = 'dev.9'
+VERSION = (0, 0, 3)
+VERSION_SUFFIX = 'dev.12'
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX
@@ -59,7 +59,36 @@ __release__ = '{release}'
 		out.write(txt)
 
 
+def gather_client_ui():
+	files = []
+	# taken from
+	# https://github.com/stub42/pytz/blob/master/src/setup.py#L16
+	# TODO: gh #8 - handle paths!
+	for dirpath, dirnames, filenames in os.walk(os.path.join('client', 'dist')):
+		# remove the 'pytz' part of the path
+		# basepath = dirpath.split(os.path.sep, 1)[1]
+		basepath = dirpath # dirpath.split(os.path.sep, 1)[1]
+		files.extend([
+			os.path.join(basepath, filename) for filename in filenames
+		])
+	return files
+
+
 rewrite_version()
+
+# still no success with packaging this shit. Really annoying python setuptools..
+# TODO: gh #7
+package_data = {
+	# TODO: gh #8 - handle paths!
+	'unav.recordingmonitor.web.ui': gather_client_ui(),
+}
+
+# print('J' * 50)
+# print('J' * 50)
+# import json
+# print(json.dumps(package_data, indent=4))
+# print('J' * 50)
+# print('J' * 50)
 
 setup(
 	name=__title__,
@@ -77,6 +106,8 @@ setup(
 		include=['unav', 'unav.recordingmonitor', 'unav.recordingmonitor.*'],
 		exclude=['*_test*'],
 	),
+	package_data=package_data,
+	include_package_data=True,
 	zip_safe=True,
 
 	platforms='any',

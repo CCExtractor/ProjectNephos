@@ -1,4 +1,8 @@
+# server
 include *.py
+
+# client UI package
+graft client/dist
 
 include AUTHORS
 include CHANGELOG.md

@@ -2,12 +2,16 @@
 
 block_cipher = None
 
+# TODO: gh #8 - handle paths!
+data_files = [
+	('../client/dist', 'unav/recordingmonitor/web/ui/dist')
+]
 
 a = Analysis(
 	['recordingmonitor.py'],
 	pathex=['pyinstaller'],
 	binaries=[],
-	datas=[],
+	datas=data_files,
 	hiddenimports=[
 		'coloredlogs',
 		'unav.recordingmonitor.jobs.maintenance',
