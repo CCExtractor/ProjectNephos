@@ -2,11 +2,13 @@
 
 import arrow
 import sqlalchemy as sa
+from sqlalchemy import ForeignKey
+# from sqlalchemy.orm import relationship
 
 from .base import Model
 from ..db.mixins import MixinIdGuid
 from ..db.types import TypeJson
-# from ..db import TypeJson
+from ..db.types import TypeUuid
 
 from ..errors import ValidationError
 
@@ -22,10 +24,13 @@ class JobInfo(MixinIdGuid, Model):
 	job_params = sa.Column(TypeJson)
 	job_id = sa.Column(sa.String(96))
 
+	channel_ID = sa.Column(TypeUuid, ForeignKey('channel.ID'), nullable=True)
+
+	DURATION_SEC_MIN = 5
 	DURATION_SEC_MAX = 8 * 60 * 60
 
-	def __init__(self):
-		super().__init__()
+	# def __init__(self):
+	# 	super().__init__()
 
 	def validate(self):
 		now = arrow.get()
@@ -34,8 +39,11 @@ class JobInfo(MixinIdGuid, Model):
 
 		duration_sec = (self.date_trim - self.date_from).total_seconds()
 
-		if duration_sec < 2:
-			raise ValidationError('Job is too short')
+		if duration_sec < self.DURATION_SEC_MIN:
+			raise ValidationError('Job is too short: {}sec < {}sec'.format(
+				duration_sec,
+				self.DURATION_SEC_MIN
+			))
 
 		if duration_sec > self.DURATION_SEC_MAX:
 			raise ValidationError('Job is too long: {}sec > {}sec'.format(

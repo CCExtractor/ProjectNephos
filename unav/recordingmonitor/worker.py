@@ -35,7 +35,7 @@ from apscheduler.events import EVENT_JOB_ERROR
 # EVENT_JOB_MISSED	A job’s execution was missed	JobExecutionEvent
 # EVENT_ALL	A catch-all mask that includes every event type
 
-from .env import cwd
+from .typeconv import str2bool
 from .errors import ConfigureJobError
 
 log = logging.getLogger(__name__)
@@ -83,22 +83,26 @@ class ScheduledWorker:
 
 		# config:
 		connection_string = app_config.connection_string
-		tz = app_config.get('scheduler.tz', 'utc')
+		tz = str(app_config.get('scheduler.tz', 'utc'))
 		jobs_limit = int(app_config.get('scheduler.jobsLimit', 10))
+		maintenance_enabled = str2bool(app_config.get('scheduler.maintenance.enabled', True))
 		maintenance_jobs_limit = int(app_config.get('scheduler.maintenance.jobsLimit', 10))
 		maintenance_interval_min = int(app_config.get('scheduler.maintenance.interval', 30))
-		path_var = app_config.get('capture.paths.base')
+		path_var = str(app_config.get('capture.paths.base'))
 
 		jobstores = {
 			'default': SQLAlchemyJobStore(url=connection_string),
-			'maintenance': MemoryJobStore(),
 		}
 
 		executors = {
 			# we are going to decode-encode video streams. That is why ProcessPool utilized.
 			'default': ProcessPoolExecutor(jobs_limit),
-			'maintenance': ThreadPoolExecutor(maintenance_jobs_limit)
 		}
+
+		if maintenance_enabled:
+			jobstores['maintenance'] = MemoryJobStore()
+			executors['maintenance'] = ThreadPoolExecutor(maintenance_jobs_limit)
+
 		job_defaults = {
 			'coalesce': False,
 			'max_instances': 1,
@@ -123,12 +127,8 @@ class ScheduledWorker:
 		# TODO: remove __app_config
 		self.__app_config = app_config
 
-		print('DEBUG')
-		print('DEBUG')
-		print('DEBUG')
-		print('DEBUG')
-		print('DEBUG')
-		# self._add_system_jobs(maintenance_interval_min)
+		if maintenance_enabled:
+			self._add_system_jobs(maintenance_interval_min)
 
 	def _add_system_jobs(self, interval_min):
 

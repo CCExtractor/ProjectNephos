@@ -12,7 +12,6 @@ import arrow
 import pydash
 import uuid
 
-from ...env import cwd as get_cwd
 from ...models.tv import Channel
 from ...models.tv import ChannelStatus
 from ...db import get_session

@@ -191,6 +191,7 @@ scheduler:
   tz: utc
   jobsLimit: 10
   maintenance:
+    enable: True
     jobsLimit: 10
     interval: 30  # minutes
 

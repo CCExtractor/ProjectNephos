@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import blinker
 import logging
 
@@ -68,6 +69,11 @@ class Application:
 		try:
 			self.scheduler.run()
 			self.web.run()
+		except (KeyboardInterrupt, SystemExit):
+			# TODO: check, that this works!
+			log.info('Shutdown application')
+			self.scheduler.shutdown()
+			sys.exit()
 		except:
 			if self.sentry:
 				self.sentry.captureException()

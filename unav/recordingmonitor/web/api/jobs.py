@@ -22,6 +22,7 @@ log = logging.getLogger(__name__)
 # output
 _job_fields = {
 	'ID': fields.String,
+	'channel_ID': fields.String,
 	'name': fields.String,
 	'date_from': fields.DateTime(dt_format='iso8601'),
 	'date_trim': fields.DateTime(dt_format='iso8601'),
@@ -37,6 +38,7 @@ class JobsListResource(Resource):
 	parser.add_argument('date_trim', type=to_datetime)
 	parser.add_argument('template_name')
 	parser.add_argument('job_params', type=to_dict)
+	parser.add_argument('channel_ID')
 
 	@marshal_with(_job_fields, envelope='data')
 	def get(self):
@@ -50,10 +52,7 @@ class JobsListResource(Resource):
 		args = self.parser.parse_args()
 		log.debug('job create, args: %s', args)
 
-		ji = JobInfo()
-		ji.name = args.name
-		ji.date_from = args.date_from
-		ji.date_trim = args.date_trim
+		ji = JobInfo(**args)
 
 		# DEBUG
 		print('!' * 40)
@@ -63,9 +62,6 @@ class JobsListResource(Resource):
 		print('!' * 40)
 		ji.date_from = arrow.now().shift(seconds=3).datetime
 		ji.date_trim = arrow.now().shift(seconds=13).datetime
-
-		ji.template_name = args.template_name
-		ji.job_params = args.job_params
 
 		ji.validate()
 

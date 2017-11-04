@@ -28,6 +28,7 @@ _channel_fields = {
 	'name': fields.String,
 	'name_short': fields.String,
 	'ip_string': fields.String,
+	'channel_status': fields.String(attribute='channel_status.status'),
 }
 
 # input
@@ -41,8 +42,8 @@ class ChannelsListResource(Resource):
 
 	@marshal_with(_channel_fields, envelope='data')
 	def get(self):
-		res = Channel.query.all()
-		return res
+		ch = Channel.query.all()
+		return ch
 
 	# CREATE CHANNEL
 	@marshal_with(_channel_fields, envelope='data')
@@ -65,9 +66,9 @@ class ChannelsResource(Resource):
 
 	@marshal_nullable_with(_channel_fields, envelope='data')
 	def get(self, ID):
-		res = Channel.query.get(ID)
+		ch = Channel.query.get(ID)
 
-		return res
+		return ch
 
 	@marshal_with(_channel_fields, envelope='data')
 	def put(self, ID):
