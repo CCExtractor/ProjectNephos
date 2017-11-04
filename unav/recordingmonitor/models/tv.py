@@ -16,7 +16,7 @@ class Channel(MixinIdGuid, Model):
 
 	__tablename__ = 'channel'
 
-	name = sa.Column(sa.String(1200), nullable=False)
+	name = sa.Column(sa.String(1200), nullable=False, unique=True)
 	name_short = sa.Column(sa.String(1200))
 	# enough to store ipv6.. IDNKW, but it is easier to store more bytes, than
 	# rewrite schema (especially now - we don't have migration tools)
@@ -29,8 +29,8 @@ class Channel(MixinIdGuid, Model):
 		lazy='joined',
 	)
 
-	def __init__(self):
-		super().__init__()
+	# def __init__(self):
+	# 	super().__init__()
 
 
 class ChannelStatus(MixinIdGuid, Model):
@@ -45,5 +45,5 @@ class ChannelStatus(MixinIdGuid, Model):
 
 	channel = relationship('Channel', back_populates='channel_status')
 
-	def __init__(self):
-		super().__init__()
+	# def __init__(self):
+	# 	super().__init__()

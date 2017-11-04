@@ -113,7 +113,7 @@ class ChannelChecker:
 			ifaddr=self.config.capture_address,
 			cwd=self.cd,
 			out=ts_file,
-			timeout_sec=10,
+			timeout_sec=6,
 			logger=log,
 		)
 		capture_res = capture_cmd.run()

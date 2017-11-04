@@ -5,6 +5,11 @@ import logging
 from raven.contrib.flask import Sentry
 from flask import Flask
 
+try:
+	from flask_cors import CORS
+except ImportError:
+	CORS = None
+
 from ..env import cwd
 from ..version import __release__
 
@@ -37,6 +42,10 @@ class OurFlask(Flask):
 				logging=True,
 				level=logging.ERROR,
 			)
+
+		if CORS and self.debug:
+			CORS(api_blueprint)
+			log.warn('(FLASK DEBUG MODE) CORS enabled for API')
 
 		self.register_blueprint(api_blueprint, url_prefix='/api/v0')
 		self.register_blueprint(ui_blueprint)

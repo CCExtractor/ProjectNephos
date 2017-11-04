@@ -2,10 +2,32 @@
 
 from functools import wraps
 
+import arrow
+
 from flask_restful import marshal
 from flask_restful.utils import unpack
 
 
+# ------------------------------------------------------------------------------
+# PARSE ARGS
+# ------------------------------------------------------------------------------
+def to_datetime(arg):
+	if arg is None:
+		return arg
+	d = arrow.get(arg)
+	return d.datetime
+
+
+def to_dict(arg):
+	if arg is None:
+		return None
+
+	return dict(arg)
+
+
+# ------------------------------------------------------------------------------
+# SEND RESPONSE
+# ------------------------------------------------------------------------------
 class marshal_nullable_with:
 	"""
 	TODO: provide a PULL REQUEST
