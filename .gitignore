@@ -31,3 +31,4 @@
 .env
 devstart.py
 recordingmonitor.sqlite
+recordingmonitor.yml
