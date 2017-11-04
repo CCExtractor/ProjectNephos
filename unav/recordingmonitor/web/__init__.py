@@ -5,16 +5,18 @@ import logging
 from raven.contrib.flask import Sentry
 from flask import Flask
 
-from .api import api_blueprint
 from ..env import cwd
 from ..version import __release__
+
+from .api import api_blueprint
+from .ui import ui_blueprint
 
 log = logging.getLogger(__name__)
 
 
 class OurFlask(Flask):
 	def __init__(self, config):
-		super().__init__(__name__)
+		super().__init__(__name__, static_folder=None)
 
 		root = cwd()
 		self.root_path = root
@@ -37,3 +39,4 @@ class OurFlask(Flask):
 			)
 
 		self.register_blueprint(api_blueprint, url_prefix='/api/v0')
+		self.register_blueprint(ui_blueprint)
