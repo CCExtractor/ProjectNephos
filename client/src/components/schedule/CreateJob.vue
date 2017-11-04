@@ -97,6 +97,8 @@
 					'name',
 					'date_from',
 					'date_trim',
+					'template_name',
+					'job_params',
 				])
 				this.$emit('create', d)
 			}

@@ -1,7 +1,7 @@
 export default {
 	tableFields: [
 		{
-			name: '__component:badge-column',
+			name: '__component:state-column',
 			title: '',
 			dataClass: 'text-center'
 		},

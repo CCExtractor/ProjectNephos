@@ -25,11 +25,11 @@
   import DonutChartData from './DonutChartData'
   import DataTable from '../../vuestic-components/vuestic-datatable/VuesticDataTable.vue'
   import Vue from 'vue'
-  import BadgeColumn from '../../tables/BadgeColumn.vue'
+  import StateColumn from '../../schedule/jobs-table/StateColumn.vue'
   import LocalData from '../../vuestic-components/vuestic-datatable/data/local-data'
   import FieldsDef from './fields-definition'
 
-  Vue.component('badge-column', BadgeColumn)
+  Vue.component('state-column', StateColumn)
 
   export default {
   	name: 'data-visualisation-tab',
