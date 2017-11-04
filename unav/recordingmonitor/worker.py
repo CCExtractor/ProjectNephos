@@ -123,7 +123,12 @@ class ScheduledWorker:
 		# TODO: remove __app_config
 		self.__app_config = app_config
 
-		self._add_system_jobs(maintenance_interval_min)
+		print('DEBUG')
+		print('DEBUG')
+		print('DEBUG')
+		print('DEBUG')
+		print('DEBUG')
+		# self._add_system_jobs(maintenance_interval_min)
 
 	def _add_system_jobs(self, interval_min):
 

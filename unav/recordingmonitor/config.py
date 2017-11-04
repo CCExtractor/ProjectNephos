@@ -281,5 +281,7 @@ log:
       level: ERROR # INFO  # NOTSET
     werkzeug:
       level: NOTSET # ERROR
+    flask:
+      level: NOTSET # ERROR
 ...
 '''  # noqa: E101

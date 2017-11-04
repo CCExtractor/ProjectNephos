@@ -187,6 +187,14 @@ class Command:
 
 
 class CaptureCommand(Command):
+	'''
+	Command for capturing the stream
+
+	..seealso::
+
+		https://github.com/XirvikMadrid/RecordingMonitor/wiki/Record-with-multicat-(this-is-just-%22call-a-program%22)
+
+	'''
 	def __init__(self, channel_ip, ifaddr, cwd='', out=None, timeout_sec=None, logger=None):
 
 		if not isinstance(out, str):
