@@ -28,7 +28,9 @@ class SQLAlchemyHandler(logging.Handler):
 		trace = None
 		exc = record.__dict__['exc_info']
 		if exc:
-			trace = traceback.format_exc(exc)
+			# TODO: be careful here! You will not be able to find this using stacktrace!
+			trace = traceback.format_exception(*exc, chain=False)
+			trace = ''.join(trace)
 
 		qw = {}
 		qw['logger'] = dd.pop('name', None)
@@ -37,8 +39,8 @@ class SQLAlchemyHandler(logging.Handler):
 		qw['job_template_name'] = dd.pop('job_template_name', None)
 		qw['trace'] = trace
 		qw['message'] = message
-		qw['data'] = dd
 		qw['ts'] = dd.pop('created', None)
+		qw['data'] = dd
 
 		# remove redudant fields:
 		dd.pop('stack_info', None)

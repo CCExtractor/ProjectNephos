@@ -43,32 +43,32 @@ log = logging.getLogger(__name__)
 
 def event_broadcasting(event):
 	log.debug('SCHEDULER EVENT: %s // %s', event.code, event.job_id)
-	print(event)
+	# print(event)
 
-	try:
-		print('scheduled_run_times', event.scheduled_run_times)
-	except:
-		pass
+	# try:
+	# 	print('scheduled_run_times', event.scheduled_run_times)
+	# except:
+	# 	pass
 
-	try:
-		print('scheduled_run_time', event.scheduled_run_time)
-	except:
-		pass
+	# try:
+	# 	print('scheduled_run_time', event.scheduled_run_time)
+	# except:
+	# 	pass
 
-	try:
-		print('retval', event.retval)
-	except:
-		pass
+	# try:
+	# 	print('retval', event.retval)
+	# except:
+	# 	pass
 
-	try:
-		print('exception', event.exception)
-	except:
-		pass
+	# try:
+	# 	print('exception', event.exception)
+	# except:
+	# 	pass
 
-	try:
-		print('traceback', event.traceback)
-	except:
-		pass
+	# try:
+	# 	print('traceback', event.traceback)
+	# except:
+	# 	pass
 
 	# code – the type code of this event
 	# job_id – identifier of the job in question
@@ -165,6 +165,9 @@ class ScheduledWorker:
 	def run(self):
 		self._scheduler.start()
 
+	def shutdown(self, wait=True):
+		self._scheduler.shutdown(wait)
+
 	def job_list(self):
 		'''
 		List all known jobs
@@ -198,10 +201,11 @@ class ScheduledWorker:
 
 		ji = job_info_model
 
-		job_info_id = ji.ID
+		job_info_ID = ji.ID
 		template_name = ji.template_name
 		date_from = ji.date_from
 		date_trim = ji.date_trim
+		channel_ID = ji.channel_ID
 		job_params = ji.job_params
 
 		tpl_name = self.__re_clean.sub('', template_name)
@@ -228,20 +232,25 @@ class ScheduledWorker:
 		trig = DateTrigger(run_date=date_from)
 		missfire_sec = int((date_trim - date_from).total_seconds())
 
-		job_dir = os.path.join(self.path_var, 'jobs', str(job_info_id))
+		job_dir = os.path.join(self.path_var, 'jobs', str(job_info_ID))
 
 		eff_job_params = {}
 		eff_job_params.update(job_params)
 
 		# predefined system params:
 		eff_job_params.update({
-			'job_id': job_info_id,
+			'job_ID': job_info_ID,
 			'job_date_from': date_from,
 			'job_date_trim': date_trim,
 			'job_dir': job_dir,
-			'job_rmdir': True,
+			'job_rmdir': self.__app_config.get('capture.rmdir', True),
+
+			'channel_ID': channel_ID,
 
 			'connection_string': self.__app_config.connection_string,
+
+			# TODO: remove, bcz it is necessary only for "capturing" job:
+			'capture_address': self.__app_config.get('capture.address'),
 		})
 
 		# IMPORTANT: must be serializable!
@@ -268,11 +277,18 @@ class ScheduledWorker:
 			fn_name,
 			trigger=trig,
 			args=all_job_args,
-			name=str(job_info_id),
+			name=str(job_info_ID),
 			misfire_grace_time=missfire_sec,
 			coalesce=True,
 			jobstore='default',
 			replace_existing=True,
+		)
+
+		log.info(
+			'job added: name [%s] template[%s] start at [%s]',
+			ji.name,
+			ji.template_name,
+			ji.date_from
 		)
 
 		return sj

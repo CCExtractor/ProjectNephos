@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 # DEBUG
 from .jobs.templates.scripttpl import TemplatedScriptJob
+from .jobs.templates.capture import CaptureStreamJob
 
 
 from .db import FlaskSQLAlchemy
@@ -28,6 +29,8 @@ from .models.base import Model
 class Application:
 
 	def __init__(self, config_path=None):
+		self._needcleanup = True
+
 		# logging will be configured in Cfg constructor
 		self.config = Config(config_path)
 
@@ -69,12 +72,20 @@ class Application:
 		try:
 			self.scheduler.run()
 			self.web.run()
-		except (KeyboardInterrupt, SystemExit):
-			# TODO: check, that this works!
-			log.info('Shutdown application')
-			self.scheduler.shutdown()
-			sys.exit()
+		# except (KeyboardInterrupt, SystemExit):
+		# 	# TODO: check, that this works!
+		# 	log.info('Shutdown application')
+		# 	self.scheduler.shutdown()
+		# 	sys.exit()
 		except:
 			if self.sentry:
 				self.sentry.captureException()
 			raise
+		finally:
+			log.info('Shutdown application')
+			self.cleanup()
+
+	def cleanup(self):
+		if self._needcleanup:
+			self.scheduler.shutdown()
+			self._needcleanup = False

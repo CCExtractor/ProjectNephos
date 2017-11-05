@@ -24,7 +24,3 @@ class ConfigureJobError(BaseError):
 		super().__init__(msg)
 
 		self.template_name = template_name
-
-
-class CommandError(BaseError):
-	pass

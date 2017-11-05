@@ -9,12 +9,38 @@ from logging import getLogger
 from subprocess import Popen, TimeoutExpired
 from subprocess import DEVNULL, PIPE
 
-from ..errors import CommandError
+from ..errors import BaseError
 from ..utils.string import decode_and_superstrip
 from ..utils.string import format_with_emptydefault
 
 
 log = getLogger(__name__)
+
+
+class CommandError(BaseError):
+	def __init__(
+		self,
+		command,
+		stderr,
+		stdout_way=None,
+		rc=None,
+	):
+		msg = (
+			'pseudo-command [{command}] failed with ret-code: [{rc}] '
+			'stdout saved to [{stdout_way}], stderr: [{stderr}]'
+		).format(
+			command=command,
+			rc=rc,
+			stdout_way=stdout_way,
+			stderr=stderr,
+		)
+
+		super().__init__(msg)
+
+		self.command = command
+		self.stderr = stderr
+		self.stdout_way = stdout_way
+		self.rc = rc
 
 
 class StreamWrapper:
@@ -51,7 +77,7 @@ class StreamWrapper:
 	def __enter__(self):
 		if self.safe:
 			self.fd = open(self.path, self.mode)
-			log.debug('StreamWrapper: open file [%s][%s] = [%s]', self.mode, self.path, self.fd)
+			log.debug('StreamWrapper: open file [%s][%s]', self.mode, self.path)
 
 		return self.fd
 
@@ -62,8 +88,8 @@ class StreamWrapper:
 
 
 class Command:
-	def __init__(self, cmd, cwd='', out=None, timeout_sec=None, logger=None):
-		self.log = logger or log
+	def __init__(self, cmd, cwd='', out=None, timeout_sec=None):
+
 		self.command = cmd
 		self.cwd = cwd
 		self.timeout = timeout_sec
@@ -89,7 +115,7 @@ class Command:
 	def __str__(self):
 		tm = ''
 		if self.timeout is not None:
-			tm = '# with timeout {} sec run:\n'.format(self.timeout)
+			tm = 'timeout {}'.format(self.timeout)
 
 		res = '{tm}{cmd}{out}'.format(
 			tm=tm,
@@ -101,41 +127,10 @@ class Command:
 
 	def run(self):
 
-		self.log.info('Command starting', extra={'command': self.command})
-		print('c' * 50)
-		print('c' * 50)
-		print(self.command)
-		print('c' * 50)
-		print('c' * 50)
-		# try:
-		# 	# pr = Popen(cmd, shell=False, stdout=PIPE, stderr=PIPE)
-		# 	# (prg.out, prg.err) = pr.communicate()
-
-		# 	# prg.out = prg.out.decode()
-		# 	# prg.err = prg.err.decode()
-
-		# 	# prg.ret = pr.returncode
-		# 	# prg.pid = pr.pid
-		# 	# run(cmd, stdout=PIPE, stderr=PIPE, shell=False, cwd=None, timeout=None, check=False, encoding=None, errors=None)
-		# 	pass
-		# except OSError as e:
-		# 	print('E' * 80)
-		# 	print(e)
-		# 	print('E' * 80)
-
-		# 	cpp = type('BUG', (), {'stderr': None, 'stdout': None, 'returncode': None})
-		# 	if e.errno == os.errno.ENOENT:
-		# 		self.log.critical('Executable was not found: [{0}]'.format(self.command))
-		# 	else:
-		# 		# Something else went wrong while trying to run the command..
-		# 		self.log.error(e)
-		# 		raise e
+		log.debug('Command starting [%s]', self.command)
 
 		if self.timeout is not None:
-			self.log.info('Command timeout is %s sec', self.timeout, extra={
-				'command': self.command,
-				'timeout': self.timeout
-			})
+			log.info('Command timeout is %s sec', self.timeout)
 
 		out = None
 		err = None
@@ -143,9 +138,7 @@ class Command:
 		pid = None
 
 		with self.out as outfd:
-			# cpp = run(self.command, stdout=outfd, stderr=PIPE, cwd=self.cwd, shell=True, timeout=self.timeout)
 
-			# preexec_fn=os.setsid
 			with Popen(self.command, stdout=outfd, stderr=PIPE, cwd=self.cwd, shell=True, start_new_session=True) as process:
 				pid = process.pid
 				try:
@@ -155,14 +148,18 @@ class Command:
 					(out, err) = process.communicate()
 				rc = process.returncode
 
-		exc = None
 		out = decode_and_superstrip(out)
 		err = decode_and_superstrip(err)
 		if rc is not None:
 			rc = int(rc)
 
 		if err:
-			exc = CommandError(err)
+			raise CommandError(
+				command=str(self),
+				stderr=err,
+				stdout_way=self.out.way,
+				rc=rc,
+			)
 
 		prg = {
 			'out_way': self.out.way,
@@ -171,18 +168,6 @@ class Command:
 			'rc': rc,
 		}
 
-		if err:
-			self.log.error(
-				'Command failed',
-				extra={'command': self.command, 'result': prg}
-			)
-		else:
-			self.log.info(
-				'Command done',
-				extra={'command': self.command, 'result': prg}
-			)
-
-		prg['exc'] = exc
 		return prg
 
 
@@ -195,7 +180,7 @@ class CaptureCommand(Command):
 		https://github.com/XirvikMadrid/RecordingMonitor/wiki/Record-with-multicat-(this-is-just-%22call-a-program%22)
 
 	'''
-	def __init__(self, channel_ip, ifaddr, cwd='', out=None, timeout_sec=None, logger=None):
+	def __init__(self, channel_ip, ifaddr, cwd='', out=None, timeout_sec=None):
 
 		if not isinstance(out, str):
 			raise ValueError('parameter `out` of CaptureCommand MUST be a string')
@@ -221,5 +206,4 @@ class CaptureCommand(Command):
 			cwd=cwd,
 			out=None,
 			timeout_sec=timeout_sec,
-			logger=logger,
 		)

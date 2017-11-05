@@ -2,6 +2,7 @@
 
 import argparse
 import dotenv
+import atexit
 
 from .version import __version__
 from .version import __description__
@@ -68,7 +69,13 @@ def create_app():
 
 def main():
 	wapp = create_app()
+
+	def _cleanup():
+		wapp.cleanup()
+	atexit.register(_cleanup)
+
 	wapp.run()
+	wapp.cleanup()
 
 
 if __name__ == '__main__':

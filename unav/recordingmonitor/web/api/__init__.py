@@ -3,6 +3,7 @@
 from flask import jsonify
 
 from flask import Blueprint
+from logging import getLogger
 # from flask import json
 
 from flask_restful import Api
@@ -21,8 +22,13 @@ api.add_resource(ChannelsListResource, '/channels')
 api.add_resource(ChannelsResource,     '/channels/<string:ID>')
 
 
+log = getLogger(__name__)
+
+
 @api_blueprint.errorhandler(Exception)
-def page_not_found(exc):
+def error_handler(exc):
+
+	log.warn(exc)
 
 	data = {'error': str(exc)}
 	raw_res = {'data': data}

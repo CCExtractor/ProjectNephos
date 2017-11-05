@@ -176,6 +176,7 @@ def _get_default_yaml():
 capture:
   address: 127.0.0.2
   # address: 159.237.36.240
+  rmdir: False
 
   paths:
     base: 'overloaded-by-default-in-python'
@@ -203,18 +204,15 @@ jobs:
 
       after:
         - echo "{message}"
-        - date +%s
+        - cmd: date +%s
+          out: PIPE
 
     capture:
-      type: scripttpl
+      type: capture
 
       parameters:
-        port:
-          type: int
-          default: 1234
-        host:
-          type: str
-          default: localhost
+        channel_ID:
+          type: TypeChannelSelect
         ftp_host:
           type: str
           default: ftp.com
@@ -226,12 +224,12 @@ jobs:
           default: password
 
       main:
-        cmd: nc -l -u {host} {port}
-        out: captured.mp4
+        out: stream2.ts
+
       after:
         - echo "{message}"
         # send with FTP:
-        - curl -T captured.mp4 ftp://{ftp_host} --user {ftp_user}:{ftp_password}
+        - curl -T stream2.ts ftp://{ftp_host} --user {ftp_user}:{ftp_password}
         - cmd: date +%s
           out: dt.txt
 
