@@ -174,12 +174,17 @@ class Config:
 def _get_default_yaml():
 	return '''---
 capture:
-  address: 127.0.0.2
-  # address: 159.237.36.240
+  # address: 127.0.0.1
+  # IP TV address
+  address: 159.237.36.240
   rmdir: False
 
   paths:
     base: 'overloaded-by-default-in-python'
+
+web:
+  host: 0.0.0.0
+  port: 5000
 
 FLASK:
   DEBUG: False
