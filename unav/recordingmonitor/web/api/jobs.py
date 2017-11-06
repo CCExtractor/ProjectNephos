@@ -28,20 +28,25 @@ _job_fields = {
 	'date_trim': fields.DateTime(dt_format='iso8601'),
 }
 
+# input
+_parser = reqparse.RequestParser()
+_parser.add_argument('name')
+_parser.add_argument('date_from', type=to_datetime)
+_parser.add_argument('date_trim', type=to_datetime)
+_parser.add_argument('template_name')
+_parser.add_argument('job_params', type=to_dict)
+_parser.add_argument('channel_ID')
+
 
 class JobsListResource(Resource):
 
-	# input
-	parser = reqparse.RequestParser()
-	parser.add_argument('name')
-	parser.add_argument('date_from', type=to_datetime)
-	parser.add_argument('date_trim', type=to_datetime)
-	parser.add_argument('template_name')
-	parser.add_argument('job_params', type=to_dict)
-	parser.add_argument('channel_ID')
-
 	@marshal_with(_job_fields, envelope='data')
 	def get(self):
+
+		# TODO: handle URLs like these:
+		#   * ?sort=&page=1&per_page=10
+		#   * ?sort=&page=1&per_page=10&filter=asdf
+
 		jjs = JobInfo.query.all()
 
 		return jjs
@@ -49,7 +54,7 @@ class JobsListResource(Resource):
 	# CREATE JOB
 	@marshal_with(_job_fields, envelope='data')
 	def post(self):
-		args = self.parser.parse_args()
+		args = _parser.parse_args()
 		log.debug('job create, args: %s', args)
 
 		ji = JobInfo(**args)
