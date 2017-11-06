@@ -15,8 +15,11 @@ a = Analysis(
 	hiddenimports=[
 		'coloredlogs',
 		'unav.recordingmonitor.jobs.maintenance',
+
 		'unav.recordingmonitor.jobs.maintenance.free_space',
 		'unav.recordingmonitor.jobs.maintenance.channel_on_air',
+
+		'unav.recordingmonitor.jobs.templates.capture',
 		'unav.recordingmonitor.jobs.templates.scripttpl',
 	],
 	hookspath=[],
