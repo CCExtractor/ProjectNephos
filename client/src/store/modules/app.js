@@ -22,7 +22,7 @@ const state = {
 			transparent: 'transparent',
 			lighterGray: '#ddd'
 		},
-		apiRoot: 'http://127.0.0.1:5000/api/v0',
+		apiRoot: '/api/v0',
 	},
 	isLoading: true
 }
