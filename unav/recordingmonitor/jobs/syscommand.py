@@ -113,12 +113,12 @@ class Command:
 	# 	self.out = StreamWrapper(prm.get('out'), cwd=self.job_dir)
 
 	def __str__(self):
-		tm = ''
+		_tm = ''
 		if self.timeout is not None:
-			tm = 'timeout {}'.format(self.timeout)
+			_tm = 'timeout {} '.format(self.timeout)
 
 		res = '{tm}{cmd}{out}'.format(
-			tm=tm,
+			tm=_tm,
 			cmd=self.command,
 			out=str(self.out),
 		)
@@ -185,11 +185,26 @@ class CaptureCommand(Command):
 		if not isinstance(out, str):
 			raise ValueError('parameter `out` of CaptureCommand MUST be a string')
 
-		cmd = format_with_emptydefault('multicat -u @{channel_ip}/ifaddr={ifaddr} {out_file}', {
+		_timeout = ''
+
+		if timeout_sec is not None:
+			_delay_27kHz = timeout_sec * 27000000
+			_timeout = '-d {:d}'.format(_delay_27kHz)
+
+		_options = ''
+		if ifaddr is not None:
+			_options = '/ifaddr={}'.format(ifaddr)
+
+		cmd = format_with_emptydefault('multicat {timeout} -u @{channel_ip}{options} {out_file}', {
 			'channel_ip': channel_ip,
 			'ifaddr':     ifaddr,
 			'out_file':   out,
+			'timeout':    _timeout,
+			'options':    _options,
 		})
+
+		# -d 2700000000
+		# it is for 100 seconds duration!
 
 		# print('*' * 40)
 		# print('*' * 40)
@@ -205,5 +220,5 @@ class CaptureCommand(Command):
 			cmd=cmd,
 			cwd=cwd,
 			out=None,
-			timeout_sec=timeout_sec,
+			timeout_sec=None,
 		)

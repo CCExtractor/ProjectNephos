@@ -36,7 +36,7 @@ class Config:
 
 	def __init__(self, config_path=None):
 
-		path_var = os.path.join(cwd(), 'var')
+		path_var = os.path.join(cwd(), 'tmp')
 
 		self._version = None
 		self._data = {}
@@ -169,14 +169,12 @@ class Config:
 		_.set_(self._data, 'FLASK.SQLALCHEMY_DATABASE_URI', dburl)
 
 
-# so the first task would be record for example from TVE1 from 15:00 to 15:45 (server local time, which is UTC+1 I think)
-
 def _get_default_yaml():
 	return '''---
 capture:
-  # address: 127.0.0.1
   # IP TV address
   address: 159.237.36.240
+  # address: 127.0.0.1
   rmdir: False
 
   paths:
