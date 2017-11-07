@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = (0, 0, 4)
+VERSION = (0, 0, 5)
 VERSION_SUFFIX = ''  # 'dev.12'
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
@@ -55,7 +55,8 @@ __release__ = '{release}'
 		release=__release__,
 	)
 	outname = os.path.join('unav', 'recordingmonitor', 'version.py')
-	with open(outname, 'w') as out:
+
+	with open(outname, 'w', encoding='utf-8') as out:
 		out.write(txt)
 
 
@@ -67,7 +68,7 @@ def gather_client_ui():
 	for dirpath, dirnames, filenames in os.walk(os.path.join('client', 'dist')):
 		# remove the 'pytz' part of the path
 		# basepath = dirpath.split(os.path.sep, 1)[1]
-		basepath = dirpath # dirpath.split(os.path.sep, 1)[1]
+		basepath = dirpath  # dirpath.split(os.path.sep, 1)[1]
 		files.extend([
 			os.path.join(basepath, filename) for filename in filenames
 		])

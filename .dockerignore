@@ -1,0 +1,11 @@
+/recordingmonitor.log
+/var/
+/libs/
+/.cache/
+/*egg-info/
+/build/*
+/dist/*
+.coverage
+/cover-html/
+
+/**/node_modules/*

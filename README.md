@@ -4,28 +4,34 @@
 
 ----------------------------------------
 
+_so the first task would be record for example from TVE1 from 15:00 to 15:45
+(server local time, which is UTC+1 I think)_
+
 ## Quickstart
 
 ### Using PIP and package
 
-1. download package `unav-recordingmonitor-0.0.1.tar.gz` (or any other version)
+1. download package `unav-recordingmonitor-0.0.1.tar.gz` (use the latest
+  version, plz)
 2. install `pip install unav-recordingmonitor-0.0.1.tar.gz`
 3. run `RecordingMonitor` **OR** `python3 -m unav.recordingmonitor`
 4. open http://127.0.0.1:9000 in your browser
 
-Script will create:
-
-- DB for internal data -- `recordingmonitor.sqlite`
-
-They will contain configuration and running data of the application
+Script will automatically create its DB (internal storage) --
+`recordingmonitor.sqlite`
 
 ### Using Docker
+
+**OBSOLETE**
 
 First you need to get an image (it is private). You could download it (not
 implemented yet) or **build** (see _development section_ of this guide)
 
 Having image locally you can run a container:
-`docker run --rm --name mon unav/recordingmonitor:0.0.1`
+
+```bash
+docker run --rm --name mon unav/recordingmonitor`
+```
 
 Some settings can be set through environment variables. But it is possible to
 mount configuration file from host-machine.
@@ -108,36 +114,46 @@ python setup.py sdist
 
 The result -- `unav-recordingmonitor-X.Y.Z.tar.gz` file in the `/dist` folder.
 
-### Build new PyInstaller bundle
+### Build new PyInstaller bundle with Docker image
 
-There are several steps:
+To create a new version of a prebuilt bundle you will need a _Docker image for
+building_. For the first time you could create it (locally) with this command:
 
-1. create package (see the previous chapter)
-2. move package to the appropriate environment (CentOS-6 is good for unav.es)
+```
+cd docker/pack-centos6
+docker build -f Dockerfile --tag unav-recordingmonitor-packer .
+cd ../..
+```
 
-Make next steps in the target environment (for example, CentOS)
+Now you can use this image to create bundle. It is easier than it sounds. Just
+run the command (**from the root folder of the repository**):
 
-1. install package `pip install unav-recordingmonitor-X.Y.Z.tar.gz`
-2. install `pip install PyInstaller`
-3. patches
-  1. fix APSchedule
-4. copy `/pyinstaller` from this project
-5. run pyinstall (see below)
-6. tar-gzip the bundle (see below)
-7. distribute the gzipped bundle
+```
+docker run -u `id -u` --rm -v `pwd`:/pack unav-recordingmonitor-packer
+```
 
-#### 5.1 fix apschedule
+This will run temporary container (`--rm` option). This container will run the
+bundling-commands inside. As a result you will get a new shiny package
+`./dist/unav-recordingmonitor-bundle-X.Y.Z.tgz`
+
+PS: we use docker image because it has the appropriate environment, the most
+importatant thing - **old glibc**, installed on unav server.
+
+Several observations about bundle version:
+
+* during build process the appscheduler lib will be patched (see section below)
+* bundle is a result of running `PyInstaller` (see section below)
+
+#### fix apschedule
+
+Without this fix bundled version of the app will not work.
 
 Fix APschedule `__init__.py` (inside site-package), use this content:
 
 ```python
 # These will be removed in APScheduler 4.0.
-# release = __import__('pkg_resources').get_distribution('APScheduler').version.split('-')[0]
-# version_info = tuple(int(x) if x.isdigit() else x for x in release.split('.'))
-# version = __version__ = '.'.join(str(x) for x in version_info[:3])
-
-release = "3.3.1cf" # __import__('pkg_resources').get_distribution('APScheduler').version.split('-')[0]
-version_info = "3.3.1cf" # tuple(int(x) if x.isdigit() else x for x in release.split('.'))
+release = '3.3.1cf' # __import__('pkg_resources').get_distribution('APScheduler').version.split('-')[0]
+version_info = '3.3.1cf' # tuple(int(x) if x.isdigit() else x for x in release.split('.'))
 version = __version__ = '.'.join(str(x) for x in version_info[:3])
 ```
 
@@ -147,19 +163,13 @@ Original solution: https://github.com/agronholm/apscheduler/issues/158#issuecomm
 
 ```bash
 pyinstaller -y --log-level=WARN pyinstaller/recordingmonitor.spec
-
-# pyinstaller -y --clean --specpath=pyinstaller --log-level=INFO pyinstaller/recordingmonitor.spec
-```
-
-#### 8 targz
-
-```bash
-tar --directory=dist -czf recordingmonitor.bin.tgz ./recordingmonitor
 ```
 
 --------------------------------------------------------------------------------
 
-## OPTIONAL: build new Docker image
+## OBSOLETE: build Docker image with installed recordingmonitor
+
+**OBSOLETE**: nobody will use docker for running this app :(
 
 You need to have targzipped package in the `/dist` folder (see _Publish new
 version_ section of this guide)
@@ -168,4 +178,40 @@ version_ section of this guide)
 
 ```bash
 docker build -f docker/recordingmonitor/Dockerfile -t unav/recordingmonitor .
+```
+
+--------------------------------------------------------------------------------
+
+## API USAGE
+
+### Channel: create
+
+```bash
+curl -X POST \
+    http://127.0.0.1:5000/api/v0/channels
+    -H 'Content-TYpe: application/json'
+    -d '{
+        "name": "TVE1",
+        "ip_string": "239.255.20.1:1234"
+    }'
+```
+
+### Job: create
+
+```bash
+curl -X POST \
+    http://127.0.0.1:5000/api/v0/jobs \
+    -H 'content-type: application/json' \
+    -d '{
+        "name": "rick and mortie",
+        "date_from": "2017-10-07T14:00:00+0500",
+        "date_trim": "2017-12-12T14:00:05+0500",
+        "template_name": "capture",
+        "channel_ID": "1b5c65e4-a03e-430c-a554-be6d3a41e721",
+        "job_params": {
+            "message": "nothing",
+            "host": "localhost",
+            "port": 1234
+        }
+    }'
 ```
