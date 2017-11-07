@@ -7,4 +7,9 @@ This is the history of changes of the `unav-recordingmonitor` package
 
 ## unpublished // ??
 
+* improved _channel on air_ check
+* new type of commands: `GetVideoInfoCommand`
+
+## 0.0.3 // 2017-11-??
+
 * **Sentry** integration

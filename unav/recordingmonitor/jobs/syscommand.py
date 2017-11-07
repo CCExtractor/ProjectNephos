@@ -6,6 +6,9 @@ import os
 import signal
 from logging import getLogger
 
+# convenient way to use
+from flask import json
+
 from subprocess import Popen, TimeoutExpired
 from subprocess import DEVNULL, PIPE
 
@@ -88,13 +91,14 @@ class StreamWrapper:
 
 
 class Command:
-	def __init__(self, cmd, cwd='', out=None, timeout_sec=None):
+	def __init__(self, cmd, cwd='', inp=None, out=None, timeout_sec=None):
 
 		self.command = cmd
 		self.cwd = cwd
 		self.timeout = timeout_sec
 
 		self.out = StreamWrapper(out, cwd=self.cwd)
+		self.inp = StreamWrapper(inp, cwd=self.cwd, mode='r')
 
 	# def __init__(self, cmd_params, job_params, timeout_sec=None, logger=None):
 	# 	self.log = logger or log
@@ -137,9 +141,17 @@ class Command:
 		rc = None
 		pid = None
 
-		with self.out as outfd:
+		with self.out as outfd, self.inp as inpfd:
 
-			with Popen(self.command, stdout=outfd, stderr=PIPE, cwd=self.cwd, shell=True, start_new_session=True) as process:
+			with Popen(
+				self.command,
+				stdin=inpfd,
+				stdout=outfd,
+				stderr=PIPE,
+				cwd=self.cwd,
+				shell=True,
+				start_new_session=True
+			) as process:
 				pid = process.pid
 				try:
 					(out, err) = process.communicate(timeout=self.timeout)
@@ -153,8 +165,16 @@ class Command:
 		if rc is not None:
 			rc = int(rc)
 
+		print('TODO IMPORTANT')
+		print('TODO IMPORTANT')
+		# TODO: need an error policy. when and what to do!!!
+		print('TODO IMPORTANT')
+		print('TODO IMPORTANT')
+
+		exc = None
 		if err:
-			raise CommandError(
+			# raise CommandError(
+			exc = CommandError(
 				command=str(self),
 				stderr=err,
 				stdout_way=self.out.way,
@@ -162,9 +182,11 @@ class Command:
 			)
 
 		prg = {
+			'inp_way': self.inp.way,
 			'out_way': self.out.way,
 			'out': out,
 			'err': err,
+			'exc': exc,
 			'rc': rc,
 		}
 
@@ -227,3 +249,60 @@ class CaptureCommand(Command):
 			out=out,
 			timeout_sec=timeout_sec,
 		)
+
+
+class GetVideoInfoCommand(Command):
+	'''
+	Wrapper for ffprobe
+
+	..seealso::
+
+		* https://gist.github.com/fabianmoronzirfas/4682731
+
+	Example of response:
+
+	{
+		"format": {
+			"filename": "/home/aman/projects/000-money/xirvik/recording-monitor-git/tmp/maintenance/channel_on_air/8256cf0f-29d7-4dfd-b61b-7b020a8f4c67/chunk.ts",
+			"nb_streams": 5,
+			"nb_programs": 1,
+			"format_name": "mpegts",
+			"format_long_name": "MPEG-TS (MPEG-2 Transport Stream)",
+			"start_time": "396.903411",
+			"duration": "1.161545",
+			"size": "48692",
+			"bit_rate": "335360",
+			"probe_score": 100
+		}
+	}
+
+
+	'''
+	def __init__(self, inp, cwd='', timeout_sec=None):
+
+		# TODO: find a better way to validate input:
+		ifst = StreamWrapper(inp, cwd=cwd, mode='r')
+		if not ifst.path:
+			raise ValueError('parameter `inp` of GetVideoInfoCommand MUST be a file-path')
+
+		cmd = 'ffprobe -loglevel fatal -print_format json -show_format -hide_banner {inp}'.format(
+			inp=inp,
+		)
+
+		super().__init__(
+			cmd=cmd,
+			cwd=cwd,
+
+			out='PIPE',
+			timeout_sec=timeout_sec,
+		)
+
+	def run(self):
+
+		res = super().run()
+
+		raw = res.get('out')
+		js = json.loads(raw)
+		res['out'] = js
+
+		return res

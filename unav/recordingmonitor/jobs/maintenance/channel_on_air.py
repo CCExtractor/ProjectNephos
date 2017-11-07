@@ -22,6 +22,7 @@ from ...errors import BaseError
 
 from ..syscommand import Command
 from ..syscommand import CaptureCommand
+from ..syscommand import GetVideoInfoCommand
 
 
 log = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class ChannelChecker:
 
 		# BUG: move to ./worker.py
 		self.path_var = app_config.get('capture.paths.base')
-		self.__cleanup_dir = app_config.get('scheduler.maintenance.rmdir', True)
+		self.__cleanup_dir = app_config.get('scheduler.maintenance.rmdir')
 
 		# TODO: use class, not type()
 		self.config = type('__internal_config', (), {})
@@ -152,18 +153,31 @@ class ChannelChecker:
 			))
 
 		# TEST 2: ffprobe
-		ffprobe_cmd = Command('ffprobe -loglevel error {}.ts'.format(filename), cwd=self.cwd, out='PIPE')
-		ffprobe_res = ffprobe_cmd.run()
-		ffprobe_exc = ffprobe_res.get('exc')
-		ffprobe_out = ffprobe_res.get('out')
-		ffprobe_rc = ffprobe_res.get('rc')
+		vinfo_cmd = GetVideoInfoCommand(inp=ts_file, cwd=self.cwd, timeout_sec=10)
+		vinfo_res = vinfo_cmd.run()
 
-		# TODO: improve error handling (RC vs STDERR)
-		if ffprobe_exc:
-			raise ffprobe_exc
+		vformat_name = pydash.get(vinfo_res, 'out.format.format_name')
+		log.debug('Channel [%s] stream format: [%s]', self.channel.name, vformat_name)
 
-		if ffprobe_rc:
-			raise ChannelCorruptedError(ffprobe_out)
+		if vformat_name != 'mpegts':
+			raise ChannelCorruptedError('Unexpected stream format: {}'.format(vformat_name))
+
+		vinfo_exc = vinfo_res.get('exc')
+		if vinfo_exc:
+			raise vinfo_exc
+
+		# ffprobe_cmd = Command('ffprobe -loglevel error {}.ts'.format(filename), cwd=self.cwd, out='PIPE')
+		# ffprobe_res = ffprobe_cmd.run()
+		# ffprobe_exc = ffprobe_res.get('exc')
+		# ffprobe_out = ffprobe_res.get('out')
+		# ffprobe_rc = ffprobe_res.get('rc')
+
+		# # TODO: improve error handling (RC vs STDERR)
+		# if ffprobe_exc:
+		# 	raise ffprobe_exc
+
+		# if ffprobe_rc:
+		# 	raise ChannelCorruptedError(ffprobe_out)
 
 		# TEST 3: ccexctractor
 		ccexctractor_cmd = Command('ccextractor -xmltv -out=null {}.ts'.format(filename), cwd=self.cwd)
