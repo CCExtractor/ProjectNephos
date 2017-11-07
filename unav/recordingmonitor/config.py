@@ -58,6 +58,7 @@ class Config:
 			with open(config_path, 'r') as stream:
 				file_conf = yaml.load(stream)
 				_.merge(dd, file_conf)
+
 		except FileNotFoundError:
 			log.debug('There is NO config file, continue using defaults and env')
 			print('There is NO config file, continue using defaults and env')
@@ -195,9 +196,12 @@ scheduler:
   tz: utc
   jobsLimit: 10
   maintenance:
-    enable: True
+    enabled: True
     jobsLimit: 10
     interval: 30  # minutes
+
+    # dbg parameter:
+    rmdir: True
 
 jobs:
   templates:

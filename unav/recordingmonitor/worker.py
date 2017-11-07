@@ -85,9 +85,9 @@ class ScheduledWorker:
 		connection_string = app_config.connection_string
 		tz = str(app_config.get('scheduler.tz', 'utc'))
 		jobs_limit = int(app_config.get('scheduler.jobsLimit', 10))
-		maintenance_enabled = str2bool(app_config.get('scheduler.maintenance.enabled', True))
-		maintenance_jobs_limit = int(app_config.get('scheduler.maintenance.jobsLimit', 10))
-		maintenance_interval_min = int(app_config.get('scheduler.maintenance.interval', 30))
+		maintenance_enabled = str2bool(app_config.get('scheduler.maintenance.enabled'))
+		maintenance_jobs_limit = int(app_config.get('scheduler.maintenance.jobsLimit'))
+		maintenance_interval_min = int(app_config.get('scheduler.maintenance.interval'))
 		path_var = str(app_config.get('capture.paths.base'))
 
 		jobstores = {
