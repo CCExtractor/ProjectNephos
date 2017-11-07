@@ -14,6 +14,7 @@ from ...models.jobs import JobInfo
 from ._utils import marshal_nullable_with
 from ._utils import to_datetime
 from ._utils import to_dict
+from ._utils import DateTimeWithUtc
 
 
 log = logging.getLogger(__name__)
@@ -24,8 +25,8 @@ _job_fields = {
 	'ID': fields.String,
 	'channel_ID': fields.String,
 	'name': fields.String,
-	'date_from': fields.DateTime(dt_format='iso8601'),
-	'date_trim': fields.DateTime(dt_format='iso8601'),
+	'date_from': DateTimeWithUtc,
+	'date_trim': DateTimeWithUtc,
 }
 
 # input

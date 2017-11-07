@@ -12,6 +12,7 @@ from flask_restful import fields
 from ...models.tv import Channel
 
 from ._utils import marshal_nullable_with
+from ._utils import DateTimeWithUtc
 # from ._utils import to_datetime
 # from ._utils import to_dict
 
@@ -29,6 +30,13 @@ _channel_fields = {
 	'name_short': fields.String,
 	'ip_string': fields.String,
 	'channel_status': fields.String(attribute='channel_status.status'),
+}
+
+_channel_status_fields = {
+	'channel_ID': fields.String,
+	'status': fields.String,
+	'error': fields.String,
+	'ts': DateTimeWithUtc,
 }
 
 # input
@@ -93,3 +101,11 @@ class ChannelsResource(Resource):
 		db.session.commit()
 
 		return None
+
+
+class ChannelsStatusResource(Resource):
+
+	@marshal_nullable_with(_channel_status_fields, envelope='data')
+	def get(self, ID):
+		ch = Channel.query.get(ID)
+		return ch.channel_status

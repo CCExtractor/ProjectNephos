@@ -61,5 +61,5 @@ class OurFlask(Flask):
 		h = self.__host
 		p = self.__port
 
-		log.info('Starging web server on [%s:%s]', h, p)
+		log.info('Starting web server on [%s:%s]', h, p)
 		super().run(host=h, port=p)

@@ -6,6 +6,7 @@ import arrow
 
 from flask_restful import marshal
 from flask_restful.utils import unpack
+from flask_restful import fields
 
 
 # ------------------------------------------------------------------------------
@@ -62,3 +63,9 @@ class marshal_nullable_with:
 
 				return marshal(resp, self.fields, self.envelope)
 		return wrapper
+
+
+class DateTimeWithUtc(fields.Raw):
+	def format(self, value):
+		utctd = arrow.get(value)
+		return utctd.isoformat()
