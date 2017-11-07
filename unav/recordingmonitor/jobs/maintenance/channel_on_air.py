@@ -27,15 +27,27 @@ from ..syscommand import CaptureCommand
 log = logging.getLogger(__name__)
 
 
-class StreamCorruptedError(BaseError):
+class ChannelBaseError(BaseError):
+	pass
+
+
+class ChannelStreamEmptyError(ChannelBaseError):
+	pass
+
+
+class ChannelCorruptedError(ChannelBaseError):
 	pass
 
 
 class ChannelChecker:
+
+	DEMO_CAPTURING_TIMEOUT_SEC = 6
+
 	def __init__(self, app_config, channel_id):
 
 		# BUG: move to ./worker.py
 		self.path_var = app_config.get('capture.paths.base')
+		self.__cleanup_dir = app_config.get('scheduler.maintenance.rmdir', True)
 
 		# TODO: use class, not type()
 		self.config = type('__internal_config', (), {})
@@ -48,7 +60,7 @@ class ChannelChecker:
 		self.ID = str(uuid.uuid4())
 
 		self.session = None
-		self.cd = None
+		self.cwd = None
 		self.channel_status = None
 
 	def __enter__(self):
@@ -70,8 +82,8 @@ class ChannelChecker:
 		self.channel_status = cs
 
 		# 2 create temporary dir
-		self.cd = os.path.join(self.path_var, 'maintenance', 'channel_on_air', str(self.ID))
-		os.makedirs(self.cd)
+		self.cwd = os.path.join(self.path_var, 'maintenance', 'channel_on_air', str(self.ID))
+		os.makedirs(self.cwd)
 
 		return self
 
@@ -85,6 +97,14 @@ class ChannelChecker:
 			cs.status = 'OK'
 			cs.error = None
 		else:
+			if isinstance(exc_val, ChannelBaseError):
+				log.info('Channel is down: %s', exc_val)
+			else:
+				log.error(
+					'Channel stream check: unexpected error',
+					exc_info=(exc_type, exc_val, exc_tb),
+				)
+
 			cs.status = pydash.get(exc_val, 'code', exc_type.__name__)
 			# not sure about trace... str(exc_tb)
 			cs.error = str(exc_val)
@@ -95,7 +115,9 @@ class ChannelChecker:
 		session.commit()
 
 		# 2 rm temporary dir
-		shutil.rmtree(self.cd)
+		if self.__cleanup_dir:
+			log.debug('Cleanup dir [%s]', self.cwd)
+			shutil.rmtree(self.cwd)
 
 		log.info('status of [%s] checked', self.channel.name)
 		return True
@@ -105,15 +127,14 @@ class ChannelChecker:
 		filename = 'chunk'
 
 		# CHECK CHANNEL
-		ts_file = os.path.join(self.cd, '{}.ts'.format(filename))
+		ts_file = os.path.join(self.cwd, '{}.ts'.format(filename))
 
 		capture_cmd = CaptureCommand(
 			channel_ip=self.channel.ip_string,
 			ifaddr=self.config.capture_address,
-			cwd=self.cd,
+			cwd=self.cwd,
 			out=ts_file,
-			timeout_sec=6,
-			logger=log,
+			timeout_sec=self.DEMO_CAPTURING_TIMEOUT_SEC,
 		)
 		capture_res = capture_cmd.run()
 		capture_exc = capture_res.get('exc')
@@ -121,21 +142,31 @@ class ChannelChecker:
 		if capture_exc:
 			raise capture_exc
 
+		# TEST 1.1: file size
+		ts_file_size = os.path.getsize(ts_file)
+		if ts_file_size < 10:
+			raise ChannelStreamEmptyError(('Channel\'s stream is empty:'
+				' captured {:d} bytes during {:d} seconds').format(
+					ts_file_size,
+					self.DEMO_CAPTURING_TIMEOUT_SEC,
+			))
+
 		# TEST 2: ffprobe
-		ffprobe_cmd = Command('ffprobe -loglevel error {}.ts'.format(filename), cwd=self.cd, out='PIPE', logger=log)
+		ffprobe_cmd = Command('ffprobe -loglevel error {}.ts'.format(filename), cwd=self.cwd, out='PIPE')
 		ffprobe_res = ffprobe_cmd.run()
 		ffprobe_exc = ffprobe_res.get('exc')
 		ffprobe_out = ffprobe_res.get('out')
 		ffprobe_rc = ffprobe_res.get('rc')
 
+		# TODO: improve error handling (RC vs STDERR)
 		if ffprobe_exc:
 			raise ffprobe_exc
 
 		if ffprobe_rc:
-			raise StreamCorruptedError(ffprobe_out)
+			raise ChannelCorruptedError(ffprobe_out)
 
 		# TEST 3: ccexctractor
-		ccexctractor_cmd = Command('ccextractor -xmltv -out=null {}.ts'.format(filename), cwd=self.cd, logger=log)
+		ccexctractor_cmd = Command('ccextractor -xmltv -out=null {}.ts'.format(filename), cwd=self.cwd)
 		ccexctractor_res = ccexctractor_cmd.run()
 		ccexctractor_exc = ccexctractor_res.get('exc')
 
@@ -143,12 +174,12 @@ class ChannelChecker:
 			raise ccexctractor_exc
 
 		# output-file created by ccextractor:
-		epg_file = os.path.join(self.cd, '{}_epg.xml'.format(filename))
+		epg_file = os.path.join(self.cwd, '{}_epg.xml'.format(filename))
 
 		cmd = '/usr/bin/curl -s -u novik:184412 -F do=upload -F "file_data=@${epg_file}" http://epgtests.xirvik.com/fm/'.format(
 			epg_file=epg_file,
 		)
-		curl_cmd = Command(cmd, cwd=self.cd, logger=log)
+		curl_cmd = Command(cmd, cwd=self.cwd)
 		curl_res = curl_cmd.run()
 		curl_exc = curl_res.get('exc')
 

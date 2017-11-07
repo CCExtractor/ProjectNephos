@@ -144,7 +144,7 @@ class Command:
 				try:
 					(out, err) = process.communicate(timeout=self.timeout)
 				except TimeoutExpired:  # as exc:
-					os.killpg(pid, signal.SIGINT)  # send signal to the process group
+					os.killpg(pid, signal.SIGTERM)  # SIGINT)  # send signal to the process group
 					(out, err) = process.communicate()
 				rc = process.returncode
 
@@ -177,7 +177,8 @@ class CaptureCommand(Command):
 
 	..seealso::
 
-		https://github.com/XirvikMadrid/RecordingMonitor/wiki/Record-with-multicat-(this-is-just-%22call-a-program%22)
+		* https://github.com/XirvikMadrid/RecordingMonitor/wiki/Record-with-multicat-(this-is-just-%22call-a-program%22)
+		* https://github.com/mmalecki/multicat/blob/master/trunk/README
 
 	'''
 	def __init__(self, channel_ip, ifaddr, cwd='', out=None, timeout_sec=None):
@@ -203,22 +204,26 @@ class CaptureCommand(Command):
 			'options':    _options,
 		})
 
-		# -d 2700000000
-		# it is for 100 seconds duration!
+		# use netcat for capturing (not sure about broadcast)
+		# nc -l -u {host} {port}
 
-		# print('*' * 40)
-		# print('*' * 40)
-		# print('DEBUG')
-		# print('*' * 40)
-		# print('*' * 40)
-		# cmd = format_with_emptydefault('nc {channel_ip} # {ts_file}', {
-		# 	'channel_ip': self.channel.ip_string,
-		# 	'ts_file': ts_file,
-		# })
+		print('DEBUG 2')
+		print('DEBUG 2')
+		(_h, _p) = channel_ip.split(':')
+
+		cmd = 'nc -l -u {host} {port}'.format(
+			host=_h,
+			port=_p,
+		)
 
 		super().__init__(
 			cmd=cmd,
 			cwd=cwd,
-			out=None,
-			timeout_sec=None,
+
+			# BUG: multicat
+			# out=None,
+			# timeout_sec=None,
+
+			out=out,
+			timeout_sec=timeout_sec,
 		)
