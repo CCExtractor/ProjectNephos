@@ -33,3 +33,6 @@
 devstart.py
 recordingmonitor.sqlite
 recordingmonitor.yml
+
+# placeholders and mocks for external software, like ccextractor
+/software/
