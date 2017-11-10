@@ -60,10 +60,10 @@ class JobsListResource(Resource):
 
 		ji = JobInfo(**args)
 
-		# DEBUG
+		# DBG
 		print('!' * 40)
 		print('!' * 40)
-		print('DEBUG')
+		print('DBG')
 		print('!' * 40)
 		print('!' * 40)
 		ji.date_from = arrow.now().shift(seconds=3).datetime

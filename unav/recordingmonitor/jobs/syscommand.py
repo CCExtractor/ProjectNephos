@@ -258,8 +258,8 @@ class CaptureCommand(Command):
 		# use netcat for capturing (not sure about broadcast)
 		# nc -l -u {host} {port}
 
-		print('DEBUG 2 netcat')
-		print('DEBUG 2 netcat')
+		print('DBG 2 netcat')
+		print('DBG 2 netcat')
 		(_h, _p) = channel_ip.split(':')
 
 		cmd = 'nc -l -u {host} {port}'.format(
@@ -267,7 +267,7 @@ class CaptureCommand(Command):
 			port=_p,
 		)
 
-		print('DEBUG 2 netcat run')
+		print('DBG 2 netcat run')
 		super().__init__(
 			cmd=cmd,
 			cwd=cwd,

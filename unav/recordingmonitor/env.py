@@ -23,11 +23,4 @@ def package_root():
 	:returns: Path
 	:rtype: str
 	'''
-	print('^' * 80)
-	print('^' * 80)
-	print('DEBUG')
-	print('package root', _pkgroot)
-	print('^' * 80)
-	print('^' * 80)
-
 	return _pkgroot

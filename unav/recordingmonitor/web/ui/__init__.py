@@ -21,7 +21,7 @@ ui_blueprint = Blueprint(
 
 # @ui_blueprint.errorhandler(404)
 # def page_not_found(e):
-# 	print('ERROR HANDLER - NOT FOUND 404')
+# 	print('DBG ERROR HANDLER - NOT FOUND 404')
 # 	return 'ERROR HANDLER - NOT FOUND 404', 404
 
 

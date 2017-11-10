@@ -6,7 +6,8 @@ from flask import json
 
 from sqlalchemy.types import TypeDecorator, CHAR, VARCHAR, JSON
 from sqlalchemy.dialects.postgresql import UUID as postgreUUID
-from sqlalchemy.dialects.postgresql import JSON as postgreJSON
+
+# from sqlalchemy.dialects.postgresql import JSON as postgreJSON
 
 
 class TypeUuid(TypeDecorator):

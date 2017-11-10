@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import blinker
 import logging
 
@@ -17,9 +16,9 @@ from .web import OurFlask
 
 log = logging.getLogger(__name__)
 
-# DEBUG
-from .jobs.templates.scripttpl import TemplatedScriptJob
-from .jobs.templates.capture import CaptureStreamJob
+# DBG
+# from .jobs.templates.scripttpl import TemplatedScriptJob
+# from .jobs.templates.capture import CaptureStreamJob
 
 
 from .db import FlaskSQLAlchemy
@@ -63,9 +62,14 @@ class Application:
 
 			blinker.signal('app.initialized').send(self)
 			log.info('Entire application initialized')
-		except:
+		except:  # noqa: E722
 			if self.sentry:
 				self.sentry.captureException()
+
+			# MUST BE RE-THROWN!
+			# if you don't want to re-raise the exception - don't use
+			# bare EXCEPT instruction!
+
 			raise
 
 	def run(self):
@@ -77,10 +81,16 @@ class Application:
 		# 	log.info('Shutdown application')
 		# 	self.scheduler.shutdown()
 		# 	sys.exit()
-		except:
+		except:  # noqa: E722
 			if self.sentry:
 				self.sentry.captureException()
+
+			# MUST BE RE-THROWN!
+			# if you don't want to re-raise the exception - don't use
+			# bare EXCEPT instruction!
+
 			raise
+
 		finally:
 			log.info('Shutdown application')
 			self.cleanup()

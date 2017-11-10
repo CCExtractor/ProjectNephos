@@ -24,16 +24,19 @@ from apscheduler.events import EVENT_JOB_MODIFIED
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.events import EVENT_JOB_ERROR
 
-# EVENT_ALL_JOBS_REMOVED	All jobs were removed from either all job stores or one particular job store	SchedulerEvent
-# EVENT_JOB_ADDED	A job was added to a job store	JobEvent
-# EVENT_JOB_REMOVED	A job was removed from a job store	JobEvent
-# EVENT_JOB_MODIFIED	A job was modified from outside the scheduler	JobEvent
-# EVENT_JOB_SUBMITTED	A job was submitted to its executor to be run	JobSubmissionEvent
-# EVENT_JOB_MAX_INSTANCES	A job being submitted to its executor was not accepted by the executor because the job has already reached its maximum concurrently executing instances	JobSubmissionEvent
-# EVENT_JOB_EXECUTED	A job was executed successfully	JobExecutionEvent
-# EVENT_JOB_ERROR	A job raised an exception during execution	JobExecutionEvent
-# EVENT_JOB_MISSED	A job’s execution was missed	JobExecutionEvent
-# EVENT_ALL	A catch-all mask that includes every event type
+# EVENT_ALL_JOBS_REMOVED    All jobs were removed from either all job stores or one particular job store
+# 							SchedulerEvent
+# EVENT_JOB_ADDED	        A job was added to a job store	JobEvent
+# EVENT_JOB_REMOVED         A job was removed from a job store	JobEvent
+# EVENT_JOB_MODIFIED        A job was modified from outside the scheduler	JobEvent
+# EVENT_JOB_SUBMITTED       A job was submitted to its executor to be run	JobSubmissionEvent
+# EVENT_JOB_MAX_INSTANCES   A job being submitted to its executor was not accepted by the executor because
+#                           the job has already reached its maximum concurrently executing instances
+#                           JobSubmissionEvent
+# EVENT_JOB_EXECUTED        A job was executed successfully	JobExecutionEvent
+# EVENT_JOB_ERROR           A job raised an exception during execution	JobExecutionEvent
+# EVENT_JOB_MISSED          A job’s execution was missed	JobExecutionEvent
+# EVENT_ALL                 A catch-all mask that includes every event type
 
 from .typeconv import str2bool
 from .errors import ConfigureJobError
@@ -43,33 +46,40 @@ log = logging.getLogger(__name__)
 
 def event_broadcasting(event):
 	log.debug('SCHEDULER EVENT: %s // %s', event.code, event.job_id)
+	# DBG
 	# print(event)
 
+	# DBG
 	# try:
 	# 	print('scheduled_run_times', event.scheduled_run_times)
 	# except:
 	# 	pass
 
+	# DBG
 	# try:
 	# 	print('scheduled_run_time', event.scheduled_run_time)
 	# except:
 	# 	pass
 
+	# DBG
 	# try:
 	# 	print('retval', event.retval)
 	# except:
 	# 	pass
 
+	# DBG
 	# try:
 	# 	print('exception', event.exception)
 	# except:
 	# 	pass
 
+	# DBG
 	# try:
 	# 	print('traceback', event.traceback)
 	# except:
 	# 	pass
 
+	# DBG
 	# code – the type code of this event
 	# job_id – identifier of the job in question
 	# jobstore – alias of the job store containing the job in question

@@ -52,6 +52,7 @@ class SQLAlchemyHandler(logging.Handler):
 		# should go to the message!
 		dd.pop('args', None)
 
+		# DBG
 		# print('*' * 80)
 		# print('*' * 80)
 		# print(json.dumps(qw, indent=4))
