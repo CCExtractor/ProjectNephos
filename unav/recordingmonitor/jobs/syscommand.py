@@ -237,11 +237,11 @@ class CaptureCommand(Command):
 		if not isinstance(out, str):
 			raise ValueError('parameter `out` of CaptureCommand MUST be a string')
 
-		_timeout = ''
+		_timeout_str = ''
 
 		if timeout_sec is not None:
 			_delay_27kHz = int(timeout_sec * 27000000)
-			_timeout = '-d {:d}'.format(_delay_27kHz)
+			_timeout_str = '-d {:d}'.format(_delay_27kHz)
 
 		_options = ''
 		if ifaddr is not None:
@@ -251,33 +251,16 @@ class CaptureCommand(Command):
 			'channel_ip': channel_ip,
 			'ifaddr':     ifaddr,
 			'out_file':   out,
-			'timeout':    _timeout,
+			'timeout':    _timeout_str,
 			'options':    _options,
 		})
 
-		# use netcat for capturing (not sure about broadcast)
-		# nc -l -u {host} {port}
-
-		print('DBG 2 netcat')
-		print('DBG 2 netcat')
-		(_h, _p) = channel_ip.split(':')
-
-		cmd = 'nc -l -u {host} {port}'.format(
-			host=_h,
-			port=_p,
-		)
-
-		print('DBG 2 netcat run')
 		super().__init__(
 			cmd=cmd,
 			cwd=cwd,
 
-			# BUG: multicat
-			# out=None,
-			# timeout_sec=None,
-
-			out=out,
-			timeout_sec=timeout_sec,
+			out=None,
+			timeout_sec=None,
 		)
 
 
