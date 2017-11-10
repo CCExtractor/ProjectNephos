@@ -231,14 +231,14 @@ jobs:
           default: password
 
       main:
-        out: stream2.ts
+        out: stream.ts
 
       after:
-        - echo "{message}"
+        # - echo "{message}"
+        # - cmd: cp stream2.ts /tmp/mon/{job_ID}.ts
+
         # send with FTP:
-        - curl -T stream2.ts ftp://{ftp_host} --user {ftp_user}:{ftp_password}
-        - cmd: date +%s
-          out: dt.txt
+        - cmd: curl -T stream.ts ftp://{ftp_host} --user {ftp_user}:{ftp_password}
 
 db:
   connection:

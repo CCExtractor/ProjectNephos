@@ -23,8 +23,8 @@ class TemplatedScriptJob(BaseJob):
 				'cmd': command_config
 			}
 
+		cwd = self.cwd
 		cmd = _cmd_params.get('cmd')
-		cwd = job_params.get('job_dir')
 		out = _cmd_params.get('out')
 
 		cmd = format_with_emptydefault(cmd, job_params)
@@ -36,53 +36,35 @@ class TemplatedScriptJob(BaseJob):
 	def __init__(self, template_config, job_params):
 		super().__init__(template_config, job_params)
 
-		self._commands_to_run = []
+		self.commands_list = []
 
 	def config(self, template_config, job_params):
-		# print('R' * 80)
-		# print(tpl_params, job_params)
-		# print('-' * 50)
-		# print(job_params)
-		# print('R' * 80)
 
 		main_cmd_config = template_config.get('main')
 		if main_cmd_config:
 			command = self.create_command_from_config(main_cmd_config, self.job_params, self.duration_sec)
-			self._commands_to_run.append(command)
+			self.commands_list.append(command)
 
 		after_cmd_config_list = template_config.get('after')
 		if after_cmd_config_list:
 			for after_cmd_config in after_cmd_config_list:
 				command = self.create_command_from_config(after_cmd_config, self.job_params)
-				self._commands_to_run.append(command)
+				self.commands_list.append(command)
 
 	def __str__(self):
-		return '\n\n'.join([
-			str(cmd) for cmd in self._commands_to_run
+		return '\n'.join([
+			str(cmd) for cmd in self.commands_list
 		])
 
 	def run(self):
-		for cmd in self._commands_to_run:
+		for cmd in self.commands_list:
 			self.log.debug('Command starting', extra={'command': str(cmd)})
 
 			ret = cmd.run()
 
-			err = ret['err']
-
-			if err:
-				self.log.error(
-					'Command failed',
-					extra={'command': str(cmd), 'result': ret}
-				)
-			else:
-				self.log.info(
-					'Command done',
-					extra={'command': str(cmd), 'result': ret}
-				)
-
-		self.log.info('Script succeeded', extra={
-			'command': str(self),
-		})
+			self.log.info(
+				'Command done', extra={'command': str(cmd), 'result': ret.__json__()}
+			)
 
 
 start = StarterFabric(TemplatedScriptJob)

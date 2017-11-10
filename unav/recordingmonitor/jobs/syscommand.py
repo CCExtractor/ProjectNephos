@@ -24,15 +24,18 @@ class CommandError(BaseError):
 	def __init__(
 		self,
 		command,
-		stderr,
+		stdin_way=None,
+		# stdin - omitted!
 		stdout_way=None,
+		stdout=None,
+		stderr=None,
 		rc=None,
 	):
 		msg = (
-			'pseudo-command [{command}] failed with ret-code: [{rc}] '
-			'stdout saved to [{stdout_way}], stderr: [{stderr}]'
+			'pseudo-command: [{command}] failed with ret-code: [{rc}] '
+			'stderr: [{stderr}]'
 		).format(
-			command=command,
+			command=str(command),
 			rc=rc,
 			stdout_way=stdout_way,
 			stderr=stderr,
@@ -41,9 +44,40 @@ class CommandError(BaseError):
 		super().__init__(msg)
 
 		self.command = command
-		self.stderr = stderr
+		self.stdin_way = stdin_way
 		self.stdout_way = stdout_way
+		self.stdout = stdout
+		self.stderr = stderr
 		self.rc = rc
+
+	def __json__(self):
+		dd = vars(self)
+		dd['command'] = str(self.command)
+		return dd
+
+
+class CommandResult:
+	def __init__(
+		self,
+		command,
+		stdin_way=None,
+		# stdin - omitted!
+		stdout_way=None,
+		stdout=None,
+		stderr=None,
+		rc=None,
+	):
+		self.command = command
+		self.stdin_way = stdin_way
+		self.stdout_way = stdout_way
+		self.stdout = stdout
+		self.stderr = stderr
+		self.rc = rc
+
+	def __json__(self):
+		dd = vars(self)
+		dd['command'] = str(self.command)
+		return dd
 
 
 class StreamWrapper:
@@ -165,32 +199,27 @@ class Command:
 		if rc is not None:
 			rc = int(rc)
 
-		print('TODO IMPORTANT')
-		print('TODO IMPORTANT')
-		# TODO: need an error policy. when and what to do!!!
-		print('TODO IMPORTANT')
-		print('TODO IMPORTANT')
-
-		exc = None
+		# exception will be thrown if there is something in stdout!
 		if err:
-			# raise CommandError(
-			exc = CommandError(
-				command=str(self),
-				stderr=err,
+			raise CommandError(
+				command=self,
+				stdin_way=self.inp.way,
 				stdout_way=self.out.way,
+				stdout=out,
+				stderr=err,
 				rc=rc,
 			)
 
-		prg = {
-			'inp_way': self.inp.way,
-			'out_way': self.out.way,
-			'out': out,
-			'err': err,
-			'exc': exc,
-			'rc': rc,
-		}
+		return CommandResult(
 
-		return prg
+			command=self,
+			stdin_way=self.inp.way,
+			# stdin - omitted!
+			stdout_way=self.out.way,
+			stdout=out,
+			stderr=err,
+			rc=rc,
+		)
 
 
 class CaptureCommand(Command):
@@ -211,7 +240,7 @@ class CaptureCommand(Command):
 		_timeout = ''
 
 		if timeout_sec is not None:
-			_delay_27kHz = timeout_sec * 27000000
+			_delay_27kHz = int(timeout_sec * 27000000)
 			_timeout = '-d {:d}'.format(_delay_27kHz)
 
 		_options = ''
@@ -229,8 +258,8 @@ class CaptureCommand(Command):
 		# use netcat for capturing (not sure about broadcast)
 		# nc -l -u {host} {port}
 
-		print('DEBUG 2')
-		print('DEBUG 2')
+		print('DEBUG 2 netcat')
+		print('DEBUG 2 netcat')
 		(_h, _p) = channel_ip.split(':')
 
 		cmd = 'nc -l -u {host} {port}'.format(
@@ -238,6 +267,7 @@ class CaptureCommand(Command):
 			port=_p,
 		)
 
+		print('DEBUG 2 netcat run')
 		super().__init__(
 			cmd=cmd,
 			cwd=cwd,
@@ -285,7 +315,7 @@ class GetVideoInfoCommand(Command):
 		if not ifst.path:
 			raise ValueError('parameter `inp` of GetVideoInfoCommand MUST be a file-path')
 
-		cmd = 'ffprobe -loglevel fatal -print_format json -show_format -hide_banner {inp}'.format(
+		cmd = 'ffprobe -loglevel error -print_format json -show_format -hide_banner {inp}'.format(
 			inp=inp,
 		)
 
@@ -299,10 +329,27 @@ class GetVideoInfoCommand(Command):
 
 	def run(self):
 
-		res = super().run()
+		try:
+			res = super().run()
+		except CommandError as exc:
+			# ffprobe sends a lot of info to the stderr
+			# this leads to EXPECTED exception, but we will check the stream error
+			# using return-code
+			if exc.rc == 0:
+				res = CommandResult(
+					command    =exc.command,        # noqa: E221
+					stdin_way  =exc.stdin_way,      # noqa: E221
+					stdout_way =exc.stdout_way,     # noqa: E221
+					stdout     =exc.stdout,         # noqa: E221
+					stderr     =exc.stderr,         # noqa: E221
+					rc         =exc.rc,             # noqa: E221
+				)
+			else:
+				raise
 
-		raw = res.get('out')
+		raw = res.stdout
 		js = json.loads(raw)
-		res['out'] = js
+		# TODO: think about strict typing for output (see ffprobe documentation)
+		res.stdout = js
 
 		return res

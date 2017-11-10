@@ -3,7 +3,6 @@
 import os
 import shutil
 import logging
-import traceback
 
 from ...db import get_session
 
@@ -91,6 +90,7 @@ class BaseJob:
 			self.log.error(
 				'Job FAILED',
 				extra={
+					'command': str(self),
 					'error': {
 						'type': str(exc_type),
 						'value': str(exc_val),
@@ -100,7 +100,11 @@ class BaseJob:
 			)
 
 		else:
-			self.log.info('Job SUCCESS')  # extra={ 'command': str(self) }
+			self.log.info('Job SUCCESS',
+				extra={
+					'command': str(self)
+				}
+			)
 
 		return True
 

@@ -126,10 +126,10 @@ class ChannelChecker:
 	def check(self):
 
 		filename = 'chunk'
+		ts_file = os.path.join(self.cwd, '{}.ts'.format(filename))
+		epg_file = os.path.join(self.cwd, '{}_epg.xml'.format(filename))
 
 		# CHECK CHANNEL
-		ts_file = os.path.join(self.cwd, '{}.ts'.format(filename))
-
 		capture_cmd = CaptureCommand(
 			channel_ip=self.channel.ip_string,
 			ifaddr=self.config.capture_address,
@@ -137,11 +137,7 @@ class ChannelChecker:
 			out=ts_file,
 			timeout_sec=self.DEMO_CAPTURING_TIMEOUT_SEC,
 		)
-		capture_res = capture_cmd.run()
-		capture_exc = capture_res.get('exc')
-
-		if capture_exc:
-			raise capture_exc
+		capture_cmd.run()
 
 		# TEST 1.1: file size
 		ts_file_size = os.path.getsize(ts_file)
@@ -156,49 +152,23 @@ class ChannelChecker:
 		vinfo_cmd = GetVideoInfoCommand(inp=ts_file, cwd=self.cwd, timeout_sec=10)
 		vinfo_res = vinfo_cmd.run()
 
-		vformat_name = pydash.get(vinfo_res, 'out.format.format_name')
+		vformat_name = pydash.get(vinfo_res.stdout, 'format.format_name')
 		log.debug('Channel [%s] stream format: [%s]', self.channel.name, vformat_name)
 
 		if vformat_name != 'mpegts':
 			raise ChannelCorruptedError('Unexpected stream format: {}'.format(vformat_name))
 
-		vinfo_exc = vinfo_res.get('exc')
-		if vinfo_exc:
-			raise vinfo_exc
-
-		# ffprobe_cmd = Command('ffprobe -loglevel error {}.ts'.format(filename), cwd=self.cwd, out='PIPE')
-		# ffprobe_res = ffprobe_cmd.run()
-		# ffprobe_exc = ffprobe_res.get('exc')
-		# ffprobe_out = ffprobe_res.get('out')
-		# ffprobe_rc = ffprobe_res.get('rc')
-
-		# # TODO: improve error handling (RC vs STDERR)
-		# if ffprobe_exc:
-		# 	raise ffprobe_exc
-
-		# if ffprobe_rc:
-		# 	raise ChannelCorruptedError(ffprobe_out)
-
 		# TEST 3: ccexctractor
-		ccexctractor_cmd = Command('ccextractor -xmltv -out=null {}.ts'.format(filename), cwd=self.cwd)
-		ccexctractor_res = ccexctractor_cmd.run()
-		ccexctractor_exc = ccexctractor_res.get('exc')
-
-		if ccexctractor_exc:
-			raise ccexctractor_exc
+		ccexctractor_cmd = Command('ccextractor -xmltv -out=null {}'.format(ts_file), cwd=self.cwd)
+		ccexctractor_cmd.run()
 
 		# output-file created by ccextractor:
-		epg_file = os.path.join(self.cwd, '{}_epg.xml'.format(filename))
-
 		cmd = '/usr/bin/curl -s -u novik:184412 -F do=upload -F "file_data=@${epg_file}" http://epgtests.xirvik.com/fm/'.format(
 			epg_file=epg_file,
 		)
-		curl_cmd = Command(cmd, cwd=self.cwd)
-		curl_res = curl_cmd.run()
-		curl_exc = curl_res.get('exc')
 
-		if curl_exc:
-			raise curl_exc
+		curl_cmd = Command(cmd, cwd=self.cwd)
+		curl_cmd.run()
 
 
 def start(app_config):
