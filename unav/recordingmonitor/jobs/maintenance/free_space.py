@@ -9,6 +9,7 @@ Check the free space on disk
 
 '''
 
+import os
 import shutil
 import blinker
 
@@ -18,6 +19,8 @@ def start(app_config):
 		'path': app_config.get('capture.paths.base')
 	}
 
+	# ensure dir for jobs' stuff exists:
+	os.makedirs(config['path'])
 	total, used, free = shutil.disk_usage(config['path'])
 
 	blinker.signal('jobs.maintenance').send('free_space',
@@ -26,3 +29,5 @@ def start(app_config):
 		used=used,
 		free=free,
 	)
+
+	return None
