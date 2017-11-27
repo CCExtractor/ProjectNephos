@@ -14,8 +14,6 @@ from .web import OurFlask
 # from .db import DB
 # from .db import WEBDB
 
-log = logging.getLogger(__name__)
-
 # DBG
 # from .jobs.templates.scripttpl import TemplatedScriptJob
 # from .jobs.templates.capture import CaptureStreamJob
@@ -24,10 +22,15 @@ log = logging.getLogger(__name__)
 from .db import FlaskSQLAlchemy
 from .models.base import Model
 
+from .notifications.emails import EmailsNotifier
+
+log = logging.getLogger(__name__)
+
 
 class Application:
 
 	def __init__(self, config_path=None):
+
 		self._needcleanup = True
 
 		# logging will be configured in Cfg constructor
@@ -44,6 +47,8 @@ class Application:
 
 		try:
 			log.info('Starting %s [%s]', __title__, __release__)
+
+			self._connect_notifiers(self.config)
 
 			self.web = OurFlask(self.config)
 			self.web.app = self
@@ -71,6 +76,33 @@ class Application:
 			# bare EXCEPT instruction!
 
 			raise
+
+	def _connect_notifiers(self, app_config):
+
+		notify_signal = blinker.signal('notifications')
+
+		port = app_config.get('notifications.emails.smtp.port')
+		if port:
+			port = int(port)
+
+		en = EmailsNotifier(
+			smtp_host=app_config.get('notifications.emails.smtp.host'),
+			smtp_port=port,
+			smtp_ssl=app_config.get('notifications.emails.smtp.ssl'),
+			smtp_tls=app_config.get('notifications.emails.smtp.tls'),
+
+			username=app_config.get('notifications.emails.smtp.username'),
+			password=app_config.get('notifications.emails.smtp.password'),
+
+			email_subject=app_config.get('notifications.emails.subject'),
+			email_from=app_config.get('notifications.emails.from'),
+			email_to=app_config.get('notifications.emails.to'),
+		)
+
+		# filter senders: sender='unav.recordingmonitor.jobs.maintenance.free_space'
+		#
+		# notify_signal.connect(asdfasdf, sender='unav.recordingmonitor.jobs.maintenance.free_space', weak=False)
+		notify_signal.connect(en.notify, weak=False)
 
 	def run(self):
 		try:

@@ -66,5 +66,10 @@ class TemplatedScriptJob(BaseJob):
 				'Command done', extra={'command': str(cmd), 'result': ret.__json__()}
 			)
 
+		# return ret.__json__()
+		return {
+			'job_ended': str(self.job_ID),
+		}
+
 
 start = StarterFabric(TemplatedScriptJob)

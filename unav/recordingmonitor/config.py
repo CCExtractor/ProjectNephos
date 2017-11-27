@@ -36,15 +36,12 @@ class Config:
 
 	def __init__(self, config_path=None):
 
-		path_var = os.path.join(cwd(), 'tmp')
-
 		self._version = None
 		self._data = {}
 		dd = self._data
 		dd['FLASK'] = {}
 
 		_.merge(dd, yaml.load(_get_default_yaml()))
-		_.set_(dd, 'capture.paths.base', path_var)
 
 		if config_path is None:
 			config_path = os.path.join(cwd(), 'recordingmonitor.yml')
@@ -68,7 +65,10 @@ class Config:
 		for stg, val in eover.items():
 			_.set_(dd, stg, val)
 
+		# set default values for settings which could not be
+		# initalized declaratively:
 		self.apply_defaults('log.version', 1)
+		self.apply_defaults('capture.paths.jobsRoot', os.path.join(cwd(), 'tmp'))
 
 		# ----------------------------------------------------------------------
 		# CONFIGURE LOGGING:
@@ -109,10 +109,14 @@ class Config:
 
 		try:
 			subcfg = self[path]
-			_.defaults_deep(subcfg, val)
 		except KeyError:
 			# key not found, create a new branch in config:
+			subcfg = None
+
+		if subcfg is None:
 			_.set_(self._data, path, val)
+		else:
+			_.defaults_deep(subcfg, val)
 
 	def _gather_from_environment(self):
 		values = {}
@@ -179,7 +183,9 @@ capture:
   rmdir: False
 
   paths:
-    base: 'overloaded-by-default-in-python'
+    # "./tmp" folder in current working directory is used
+    # if explicit value is not set
+    jobsRoot: null  # '/tmp'
 
 web:
   host: 0.0.0.0
@@ -195,6 +201,7 @@ FLASK:
 scheduler:
   tz: utc
   jobsLimit: 10
+
   maintenance:
     enabled: True
     jobsLimit: 10
@@ -202,6 +209,22 @@ scheduler:
 
     # dbg parameter:
     rmdir: True
+
+notifications:
+  emails:
+    smtp:
+      host: localhost
+      port: None  # 465
+      ssl: False  # True
+      tls: False
+
+      username: usr
+      password: pwd
+
+    subject: 'Recording Monitor'
+    from: recordingmonitor@unav.es
+    to:
+      - support@xirvik.com
 
 jobs:
   templates:

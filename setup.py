@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = (0, 0, 6)
+VERSION = (0, 0, 7)
 VERSION_SUFFIX = ''  # 'dev.1'
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
@@ -139,6 +139,7 @@ setup(
 		'APScheduler      == 3.3.1',
 		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
 		'Flask-SQLAlchemy >= 2.3.0,    < 2.3.99',
+		'Jinja2           >= 2.10,     < 2.99',
 
 		'flask-restful    >= 0.3.6,    < 0.3.99',
 		#'flask-restplus   >= 0.10.1,   < 0.10.99',
@@ -147,10 +148,8 @@ setup(
 		'PyYAML           == 3.12',
 		'python-dotenv    == 0.7.1',
 		'coloredlogs      == 7.3',
-		'pybars3          == 0.9.3',
 		'pydash           == 4.2.1',
 		'arrow            >= 0.10.0,   < 0.10.99',
-
 
 		# 'simplejson       == 3.11.1',
 		# 'pony             == 0.7.2',

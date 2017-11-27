@@ -6,6 +6,7 @@ import re
 import logging
 import datetime
 
+import pydash
 from pytz import timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -41,7 +42,49 @@ from apscheduler.events import EVENT_JOB_ERROR
 from .typeconv import str2bool
 from .errors import ConfigureJobError
 
+from .jobs.maintenance.free_space import FreeSpaceJobResultProcessor
+from .jobs.maintenance.channel_on_air import ChannelOnAirJobResultProcessor
+from .jobs.result_processor import BaseJobResultProcessor
+
 log = logging.getLogger(__name__)
+
+
+class EventJobExecutedHandler:
+
+	def __init__(self, app_config):
+		self.base_job_result_processor = BaseJobResultProcessor(app_config)
+
+		self.job_result_processors = {
+			FreeSpaceJobResultProcessor.KIND: FreeSpaceJobResultProcessor(app_config),
+			ChannelOnAirJobResultProcessor.KIND: ChannelOnAirJobResultProcessor(app_config),
+		}
+
+	def __call__(self, event):
+		# event: apscheduler.events.JobExecutionEvent
+
+		# code – the type code of this event
+		# alias – alias of the job store or executor that was added or removed (if applicable)
+		# job_id – identifier of the job in question
+		# jobstore – alias of the job store containing the job in question
+		# scheduled_run_time – the time when the job was scheduled to be run
+		# retval – the return value of the successfully executed job
+		# exception – the exception raised by the job
+		# traceback
+
+		log.debug('APScheduler Event: job executed [%s]', event.job_id)
+
+		# TODO: don't use KIND as a type-detector, use JOB data to differentiate
+		job_kind = pydash.get(event.retval, 'kind')
+
+		proc = self.job_result_processors.get(job_kind)
+		if not proc:
+			proc = self.base_job_result_processor
+
+		proc.handle_event(
+			event.retval,
+			event.exception,
+			event.traceback
+		)
 
 
 def event_broadcasting(event):
@@ -62,10 +105,14 @@ def event_broadcasting(event):
 	# 	pass
 
 	# DBG
-	# try:
-	# 	print('retval', event.retval)
-	# except:
-	# 	pass
+	try:
+		# print('retval', event.retval)
+		# print('retval', event.retval)
+		# print('retval', event.retval)
+		# print('retval', event.retval)
+		pass
+	except:
+		pass
 
 	# DBG
 	# try:
@@ -98,7 +145,10 @@ class ScheduledWorker:
 		maintenance_enabled = str2bool(app_config.get('scheduler.maintenance.enabled'))
 		maintenance_jobs_limit = int(app_config.get('scheduler.maintenance.jobsLimit'))
 		maintenance_interval_min = int(app_config.get('scheduler.maintenance.interval'))
-		path_var = str(app_config.get('capture.paths.base'))
+		jobs_root = str(app_config.get('capture.paths.jobsRoot'))
+
+		# create root directory for jobs temporary files
+		os.makedirs(jobs_root, exist_ok=True)
 
 		jobstores = {
 			'default': SQLAlchemyJobStore(url=connection_string),
@@ -120,12 +170,7 @@ class ScheduledWorker:
 		s = BackgroundScheduler()
 		self._scheduler = s
 		self.tz = timezone(tz)
-		self.path_var = path_var
-
-		s.add_listener(
-			event_broadcasting,
-			EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
-		)
+		self.jobs_root = jobs_root
 
 		self._scheduler.configure(
 			jobstores=jobstores,
@@ -134,11 +179,30 @@ class ScheduledWorker:
 			timezone=self.tz,
 		)
 
+		# ----------------------------------------------------------------------
+		# connect event listeners
+		# ----------------------------------------------------------------------
+		self._connect_listeners(app_config)
+
 		# TODO: remove __app_config
 		self.__app_config = app_config
 
+		# ----------------------------------------------------------------------
+		# add maitenance jobs
+		# ----------------------------------------------------------------------
 		if maintenance_enabled:
 			self._add_system_jobs(maintenance_interval_min)
+
+	def _connect_listeners(self, app_config):
+		s = self._scheduler
+
+		e1 = EventJobExecutedHandler(app_config)
+		s.add_listener(e1, EVENT_JOB_EXECUTED)
+
+		s.add_listener(
+			event_broadcasting,
+			EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED | EVENT_JOB_ERROR
+		)
 
 	def _add_system_jobs(self, interval_min):
 
@@ -242,7 +306,7 @@ class ScheduledWorker:
 		trig = DateTrigger(run_date=date_from)
 		missfire_sec = int((date_trim - date_from).total_seconds())
 
-		job_dir = os.path.join(self.path_var, 'jobs', str(job_info_ID))
+		job_dir = os.path.join(self.jobs_root, 'jobs', str(job_info_ID))
 
 		eff_job_params = {}
 		eff_job_params.update(job_params)

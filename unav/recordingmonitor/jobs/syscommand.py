@@ -80,6 +80,17 @@ class CommandResult:
 		return dd
 
 
+def command_error2result(exc):
+	return CommandResult(
+		command    =exc.command,        # noqa: E221
+		stdin_way  =exc.stdin_way,      # noqa: E221
+		stdout_way =exc.stdout_way,     # noqa: E221
+		stdout     =exc.stdout,         # noqa: E221
+		stderr     =exc.stderr,         # noqa: E221
+		rc         =exc.rc,             # noqa: E221
+	)
+
+
 class StreamWrapper:
 	def __init__(self, name, cwd=None, mode='w'):
 		self.safe = False
@@ -263,6 +274,20 @@ class CaptureCommand(Command):
 			timeout_sec=None,
 		)
 
+	def run(self):
+
+		try:
+			res = super().run()
+		except CommandError as exc:
+			# multicat sends DEBUG messages to stderr
+			# this leads to EXPECTED exception
+			if exc.rc == 0:
+				res = command_error2result(exc)
+			else:
+				raise
+
+		return res
+
 
 class GetVideoInfoCommand(Command):
 	'''
@@ -319,14 +344,7 @@ class GetVideoInfoCommand(Command):
 			# this leads to EXPECTED exception, but we will check the stream error
 			# using return-code
 			if exc.rc == 0:
-				res = CommandResult(
-					command    =exc.command,        # noqa: E221
-					stdin_way  =exc.stdin_way,      # noqa: E221
-					stdout_way =exc.stdout_way,     # noqa: E221
-					stdout     =exc.stdout,         # noqa: E221
-					stderr     =exc.stderr,         # noqa: E221
-					rc         =exc.rc,             # noqa: E221
-				)
+				res = command_error2result(exc)
 			else:
 				raise
 

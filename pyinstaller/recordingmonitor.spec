@@ -4,7 +4,8 @@ block_cipher = None
 
 # TODO: gh #8 - handle paths!
 data_files = [
-	('../client/dist', 'unav/recordingmonitor/web/ui/dist')
+	('../client/dist', 'unav/recordingmonitor/web/ui/dist'),
+	('../unav/recordingmonitor/notifications/formatter/templates', 'unav/recordingmonitor/notifications/formatter/templates'),
 ]
 
 a = Analysis(
