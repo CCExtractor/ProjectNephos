@@ -214,7 +214,7 @@ notifications:
   emails:
     smtp:
       host: localhost
-      port: None  # 465
+      port: null  # 465
       ssl: False  # True
       tls: False
 
