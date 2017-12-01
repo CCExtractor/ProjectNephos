@@ -49,89 +49,6 @@ from .jobs.result_processor import BaseJobResultProcessor
 log = logging.getLogger(__name__)
 
 
-class EventJobExecutedHandler:
-
-	def __init__(self, app_config):
-		self.base_job_result_processor = BaseJobResultProcessor(app_config)
-
-		self.job_result_processors = {
-			FreeSpaceJobResultProcessor.KIND: FreeSpaceJobResultProcessor(app_config),
-			ChannelOnAirJobResultProcessor.KIND: ChannelOnAirJobResultProcessor(app_config),
-		}
-
-	def __call__(self, event):
-		# event: apscheduler.events.JobExecutionEvent
-
-		# code – the type code of this event
-		# alias – alias of the job store or executor that was added or removed (if applicable)
-		# job_id – identifier of the job in question
-		# jobstore – alias of the job store containing the job in question
-		# scheduled_run_time – the time when the job was scheduled to be run
-		# retval – the return value of the successfully executed job
-		# exception – the exception raised by the job
-		# traceback
-
-		log.debug('APScheduler Event: job executed [%s]', event.job_id)
-
-		# TODO: don't use KIND as a type-detector, use JOB data to differentiate
-		job_kind = pydash.get(event.retval, 'kind')
-
-		proc = self.job_result_processors.get(job_kind)
-		if not proc:
-			proc = self.base_job_result_processor
-
-		proc.handle_event(
-			event.retval,
-			event.exception,
-			event.traceback
-		)
-
-
-def event_broadcasting(event):
-	log.debug('SCHEDULER EVENT: %s // %s', event.code, event.job_id)
-	# DBG
-	# print(event)
-
-	# DBG
-	# try:
-	# 	print('scheduled_run_times', event.scheduled_run_times)
-	# except:
-	# 	pass
-
-	# DBG
-	# try:
-	# 	print('scheduled_run_time', event.scheduled_run_time)
-	# except:
-	# 	pass
-
-	# DBG
-	try:
-		# print('retval', event.retval)
-		# print('retval', event.retval)
-		# print('retval', event.retval)
-		# print('retval', event.retval)
-		pass
-	except:
-		pass
-
-	# DBG
-	# try:
-	# 	print('exception', event.exception)
-	# except:
-	# 	pass
-
-	# DBG
-	# try:
-	# 	print('traceback', event.traceback)
-	# except:
-	# 	pass
-
-	# DBG
-	# code – the type code of this event
-	# job_id – identifier of the job in question
-	# jobstore – alias of the job store containing the job in question
-
-
 class ScheduledWorker:
 
 	__re_clean = re.compile('[^-_\w\d]', flags=re.A | re.I)
@@ -142,10 +59,12 @@ class ScheduledWorker:
 		connection_string = app_config.connection_string
 		tz = str(app_config.get('scheduler.tz', 'utc'))
 		jobs_limit = int(app_config.get('scheduler.jobsLimit', 10))
-		maintenance_enabled = str2bool(app_config.get('scheduler.maintenance.enabled'))
-		maintenance_jobs_limit = int(app_config.get('scheduler.maintenance.jobsLimit'))
-		maintenance_interval_min = int(app_config.get('scheduler.maintenance.interval'))
 		jobs_root = str(app_config.get('capture.paths.jobsRoot'))
+
+		# TODO: remove this option! use per-task options
+		maintenance_enabled = str2bool(app_config.get('maintenance.enabled'))
+		# TODO: remove this option, count enabled tasks
+		maintenance_jobs_limit = int(app_config.get('maintenance.jobsLimit'))
 
 		# create root directory for jobs temporary files
 		os.makedirs(jobs_root, exist_ok=True)
@@ -191,35 +110,36 @@ class ScheduledWorker:
 		# add maitenance jobs
 		# ----------------------------------------------------------------------
 		if maintenance_enabled:
-			self._add_system_jobs(maintenance_interval_min)
+			self._add_maintenance_jobs(app_config)
 
 	def _connect_listeners(self, app_config):
 		s = self._scheduler
 
-		e1 = EventJobExecutedHandler(app_config)
-		s.add_listener(e1, EVENT_JOB_EXECUTED)
+		executed_listener = EventJobExecutedHandler(app_config)
+		s.add_listener(executed_listener, EVENT_JOB_EXECUTED)
 
-		s.add_listener(
-			event_broadcasting,
-			EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED | EVENT_JOB_ERROR
-		)
+		# s.add_listener(
+		# 	event_broadcasting,
+		# 	EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED | EVENT_JOB_ERROR
+		# )
 
-	def _add_system_jobs(self, interval_min):
+	def _add_maintenance_jobs(self, app_config):
 
-		job_types = [
-			'free_space',
-			'channel_on_air',
-		]
+		jobs = app_config.get('maintenance.jobs')
+		if not isinstance(jobs, dict):
+			raise ValueError('Config: maintenance.jobs must be a dict')
 
-		trig = IntervalTrigger(
-			minutes=interval_min,
-			start_date=datetime.datetime.now() + datetime.timedelta(seconds=5)
-		)
+		for name, config in jobs.items():
+			job_type = config['type']
+			interval_min = int(config.get('interval', '30'))
 
-		# TODO: it is not a good idea to pass the entire app_config to the job. But it's the fastest way for implementation
-		all_job_args = [self.__app_config]
+			trig = IntervalTrigger(
+				minutes=interval_min,
+				start_date=datetime.datetime.now() + datetime.timedelta(seconds=5)
+			)
 
-		for job_type in job_types:
+			# TODO: it is not a good idea to pass the entire app_config to the job. But it's the fastest way for implementation
+			all_job_args = [self.__app_config]
 
 			fn = 'unav.recordingmonitor.jobs.maintenance.{}:start'.format(job_type)
 
@@ -234,6 +154,13 @@ class ScheduledWorker:
 				jobstore='maintenance',
 				executor='maintenance',
 				replace_existing=True,
+			)
+
+			log.debug(
+				'maintenance task [%s] of type [%s] added with interval [%s] minutes',
+				name,
+				job_type,
+				interval_min
 			)
 
 	def run(self):
@@ -366,3 +293,41 @@ class ScheduledWorker:
 		)
 
 		return sj
+
+
+class EventJobExecutedHandler:
+
+	def __init__(self, app_config):
+		self.base_job_result_processor = BaseJobResultProcessor(app_config)
+
+		self.job_result_processors = {
+			FreeSpaceJobResultProcessor.KIND: FreeSpaceJobResultProcessor(app_config),
+			ChannelOnAirJobResultProcessor.KIND: ChannelOnAirJobResultProcessor(app_config),
+		}
+
+	def __call__(self, event):
+		# event: apscheduler.events.JobExecutionEvent
+
+		# code – the type code of this event
+		# alias – alias of the job store or executor that was added or removed (if applicable)
+		# job_id – identifier of the job in question
+		# jobstore – alias of the job store containing the job in question
+		# scheduled_run_time – the time when the job was scheduled to be run
+		# retval – the return value of the successfully executed job
+		# exception – the exception raised by the job
+		# traceback
+
+		log.debug('APScheduler Event: job executed [%s]', event.job_id)
+
+		# TODO: don't use KIND as a type-detector, use JOB data to differentiate
+		job_kind = pydash.get(event.retval, 'kind')
+
+		proc = self.job_result_processors.get(job_kind)
+		if not proc:
+			proc = self.base_job_result_processor
+
+		proc.handle_event(
+			event.retval,
+			event.exception,
+			event.traceback
+		)

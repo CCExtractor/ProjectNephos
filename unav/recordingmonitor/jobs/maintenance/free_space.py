@@ -38,22 +38,24 @@ class FreeSpaceJobResultProcessor(BaseJobResultProcessor):
 	# TODO: use package name
 	KIND = 'unav.recordingmonitor.jobs.maintenance.free_space'
 
-	def handle_data(self, data):
+	def __init__(self, app_config):
+		super().__init__(app_config)
 
-		# TODO: take from config
-		free_bottom_level = 100 * 1024 * 1024  # 100 Mb
-		free_percent_bottom_level = 10
+		self._min_bytes = app_config.get('maintenance.jobs.freeSpace.minBytes')
+		self._min_percent = app_config.get('maintenance.jobs.freeSpace.minPercent')
+
+	def handle_data(self, data):
 
 		path = data.get('path')
 		used = data.get('used')
 		free = data.get('free')
 		total = data.get('total')
 
-		free_percent = float(free) / total * 100.0
+		free_percent = free * 100.0 / total
 
 		if (
-			free < free_bottom_level or
-			free_percent < free_percent_bottom_level
+			free < self._min_bytes or
+			free_percent < self._min_percent
 		):
 			# it is a problem, notify
 			self.notify_signal.send(
@@ -65,8 +67,8 @@ class FreeSpaceJobResultProcessor(BaseJobResultProcessor):
 					'free': free,
 					'total': total,
 					'free_percent': free_percent,
-					'free_bottom_level': free_bottom_level,
-					'free_percent_bottom_level': free_percent_bottom_level,
+					'free_min': self._min_bytes,
+					'free_min_percent': self._min_percent,
 				},
 			)
 

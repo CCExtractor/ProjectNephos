@@ -34,7 +34,7 @@ class ChannelBaseError(BaseError):
 	pass
 
 
-class ChannelStreamEmptyError(ChannelBaseError):
+class ChannelStreamIsEmptyError(ChannelBaseError):
 	pass
 
 
@@ -164,7 +164,7 @@ class ChannelChecker:
 		# TEST 1.1: file size
 		ts_file_size = os.path.getsize(ts_file)
 		if ts_file_size < 10:
-			raise ChannelStreamEmptyError(('Channel\'s stream is empty:'
+			raise ChannelStreamIsEmptyError(('Channel\'s stream is empty:'
 				' captured {:d} bytes during {:d} seconds').format(
 					ts_file_size,
 					self.DEMO_CAPTURING_TIMEOUT_SEC,

@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 VERSION = (0, 0, 7)
-VERSION_SUFFIX = 'dev.1'
+VERSION_SUFFIX = 'dev.3'
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX
@@ -95,9 +95,9 @@ setup(
 	name=__title__,
 	version=__release__,
 	url='https://github.com/XirvikMadrid/RecordingMonitor',
-	bugtrack_url='https://github.com/XirvikMadrid/RecordingMonitor/issues',
+	# bugtrack_url='https://github.com/XirvikMadrid/RecordingMonitor/issues',
 	license=__license__,
-	copyright=__copyright__,
+	# copyright=__copyright__,
 	author=__author__,
 	author_email='support@xirvik.com',
 	description=__description__,

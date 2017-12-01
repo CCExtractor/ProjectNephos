@@ -70,6 +70,10 @@ class Config:
 		self.apply_defaults('log.version', 1)
 		self.apply_defaults('capture.paths.jobsRoot', os.path.join(cwd(), 'tmp'))
 
+		# list of debugging options
+		self.apply_defaults('maintenance.rmdir', True)
+		self.apply_defaults('capture.rmdir', True)
+
 		# ----------------------------------------------------------------------
 		# CONFIGURE LOGGING:
 		# ----------------------------------------------------------------------
@@ -178,9 +182,7 @@ def _get_default_yaml():
 	return '''---
 capture:
   # IP TV address
-  address: 159.237.36.240
-  # address: 127.0.0.1
-  rmdir: False
+  address: 127.0.0.1
 
   paths:
     # "./tmp" folder in current working directory is used
@@ -191,6 +193,21 @@ web:
   host: 0.0.0.0
   port: 5000
 
+maintenance:
+  enabled: True
+  jobsLimit: 10
+
+  jobs:
+    freeSpace:
+      type: free_space
+      interval: 30  # minutes
+      minBytes: 104857600  # 100 Mb
+      minPercent: 10
+
+    channelOnAir:
+      type: channel_on_air
+      interval: 60  # minutes
+
 FLASK:
   DEBUG: False
   JSON_AS_ASCII: False
@@ -200,15 +217,7 @@ FLASK:
 
 scheduler:
   tz: utc
-  jobsLimit: 10
-
-  maintenance:
-    enabled: True
-    jobsLimit: 10
-    interval: 30  # minutes
-
-    # dbg parameter:
-    rmdir: True
+  jobsLimit: 20
 
 notifications:
   emails:
