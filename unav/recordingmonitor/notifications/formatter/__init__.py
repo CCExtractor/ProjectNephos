@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import logging
 
 from jinja2 import Environment
@@ -10,12 +11,21 @@ from jinja2 import ChoiceLoader
 # from jinja2 import Template
 from jinja2 import select_autoescape
 
+from ...env import package_root
+
 log = logging.getLogger(__name__)
 
 
+_template_root = os.path.join(
+	package_root(),
+	'notifications',
+	'formatter',
+	'templates',
+)
+
 _env = Environment(
 	loader=ChoiceLoader([
-		FileSystemLoader('./unav/recordingmonitor/notifications/formatter/templates'),
+		FileSystemLoader(_template_root),
 		# ModuleLoader(path)
 	]),
 	autoescape=select_autoescape(['html', 'xml'])

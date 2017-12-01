@@ -277,10 +277,11 @@ class ChannelOnAirJobResultProcessor(BaseJobResultProcessor):
 					'channel_ID': channel_ID_str,
 					'channel_status': new_st,
 				})
-		was_changes = len(channels_went_down) + len(channels_went_up)
+
+		something_changed = len(channels_went_down) + len(channels_went_up)
 		down_counter = len(channels_stay_down)
 
-		if was_changes > 0:
+		if something_changed > 0:
 			# notify about changes
 			self.notify_signal.send(
 				self.KIND,

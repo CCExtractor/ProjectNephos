@@ -18,7 +18,8 @@ def cwd():
 
 def package_root():
 	'''
-	The root of the package. In most cases - `site-content` folder
+	The root of the package. In most cases the
+	`site-content/unav/recordingmonitor` folder
 
 	:returns: Path
 	:rtype: str
