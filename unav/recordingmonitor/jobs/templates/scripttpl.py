@@ -9,6 +9,8 @@ from ._common import BaseJob
 from ..syscommand import Command
 from ...utils.string import format_with_emptydefault
 
+from ..result_processor import BaseJobResultProcessor
+
 
 log = getLogger(__name__)
 
@@ -68,8 +70,24 @@ class TemplatedScriptJob(BaseJob):
 
 		# return ret.__json__()
 		return {
-			'job_ended': str(self.job_ID),
+			'kind': ScriptTplJobResultProcessor.KIND,
+
+			'data': {
+				'job_ended': str(self.job_ID),
+			}
 		}
+
+
+class ScriptTplJobResultProcessor(BaseJobResultProcessor):
+
+	# TODO: use package name
+	KIND = 'unav.recordingmonitor.jobs.templates.scripttpl'
+
+	def __init__(self, app_config):
+		super().__init__(app_config)
+
+	# def handle_data(self, data):
+	# 	pass
 
 
 start = StarterFabric(TemplatedScriptJob)

@@ -4,6 +4,8 @@ import os
 import shutil
 import logging
 
+import arrow
+
 from ...db import get_session
 
 from ...logger import SQLAlchemyHandler
@@ -45,6 +47,8 @@ class BaseJob:
 
 	def __init__(self, template_config, job_params):
 
+		_start_at = arrow.get()
+
 		# TODO: is it necessary??
 		job_params = dict(job_params)
 
@@ -58,9 +62,9 @@ class BaseJob:
 		self.cwd = None
 		self.job_ID = job_params['job_ID']
 
-		self.date_from = job_params['job_date_from']
-		self.date_trim = job_params['job_date_trim']
-		self.duration_sec = (self.date_trim - self.date_from).total_seconds()
+		self.duration_sec = job_params['job_main_duration_sec']
+		self.date_from = _start_at.datetime
+		self.date_trim = _start_at.shift(seconds=self.duration_sec).datetime
 
 		log.debug('Job [%s] init runtime job instance', self.job_ID)
 
@@ -105,8 +109,6 @@ class BaseJob:
 					'command': str(self)
 				}
 			)
-
-		return True
 
 	def run(self):
 		pass

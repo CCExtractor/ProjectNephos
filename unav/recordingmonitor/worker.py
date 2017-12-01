@@ -116,11 +116,11 @@ class ScheduledWorker:
 		s = self._scheduler
 
 		executed_listener = EventJobExecutedHandler(app_config)
-		s.add_listener(executed_listener, EVENT_JOB_EXECUTED)
+		s.add_listener(executed_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
 		# s.add_listener(
 		# 	event_broadcasting,
-		# 	EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED | EVENT_JOB_ERROR
+		# 	EVENT_JOB_ADDED | EVENT_JOB_SUBMITTED | EVENT_JOB_MODIFIED
 		# )
 
 	def _add_maintenance_jobs(self, app_config):
@@ -205,7 +205,7 @@ class ScheduledWorker:
 		job_info_ID = ji.ID
 		template_name = ji.template_name
 		date_from = ji.date_from
-		date_trim = ji.date_trim
+		duration_sec = ji.duration_sec
 		channel_ID = ji.channel_ID
 		job_params = ji.job_params
 
@@ -231,7 +231,7 @@ class ScheduledWorker:
 		fn_name = 'unav.recordingmonitor.jobs.templates.{}:start'.format(job_type)
 
 		trig = DateTrigger(run_date=date_from)
-		missfire_sec = int((date_trim - date_from).total_seconds())
+		missfire_sec = duration_sec
 
 		job_dir = os.path.join(self.jobs_root, 'jobs', str(job_info_ID))
 
@@ -241,8 +241,7 @@ class ScheduledWorker:
 		# predefined system params:
 		eff_job_params.update({
 			'job_ID': job_info_ID,
-			'job_date_from': date_from,
-			'job_date_trim': date_trim,
+			'job_main_duration_sec': duration_sec,
 			'job_dir': job_dir,
 			'job_rmdir': self.__app_config.get('capture.rmdir', True),
 

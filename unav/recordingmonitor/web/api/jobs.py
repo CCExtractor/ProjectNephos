@@ -26,14 +26,14 @@ _job_fields = {
 	'channel_ID': fields.String,
 	'name': fields.String,
 	'date_from': DateTimeWithUtc,
-	'date_trim': DateTimeWithUtc,
+	'duration_sec': fields.Integer,
 }
 
 # input
 _parser = reqparse.RequestParser()
 _parser.add_argument('name')
 _parser.add_argument('date_from', type=to_datetime)
-_parser.add_argument('date_trim', type=to_datetime)
+_parser.add_argument('duration_sec', type=int)
 _parser.add_argument('template_name')
 _parser.add_argument('job_params', type=to_dict)
 _parser.add_argument('channel_ID')
@@ -67,7 +67,7 @@ class JobsListResource(Resource):
 		print('!' * 40)
 		print('!' * 40)
 		ji.date_from = arrow.now().shift(seconds=3).datetime
-		ji.date_trim = arrow.now().shift(seconds=13).datetime
+		ji.duration_sec = 10
 
 		ji.validate()
 

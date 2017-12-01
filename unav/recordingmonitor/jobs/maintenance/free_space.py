@@ -72,5 +72,5 @@ class FreeSpaceJobResultProcessor(BaseJobResultProcessor):
 				},
 			)
 
-	# def handle_error(cls, exc, tb):
+	# def handle_error(cls, exc, tb_str):
 	# 	pass

@@ -19,7 +19,7 @@ class JobInfo(MixinIdGuid, Model):
 
 	name = sa.Column(sa.String(1200))
 	date_from = sa.Column(sa.DateTime)
-	date_trim = sa.Column(sa.DateTime)
+	duration_sec = sa.Column(sa.Integer)
 	template_name = sa.Column(sa.String(4800))
 	job_params = sa.Column(TypeJson)
 	job_id = sa.Column(sa.String(96))
@@ -34,19 +34,17 @@ class JobInfo(MixinIdGuid, Model):
 
 	def validate(self):
 		now = arrow.get()
-		if self.date_from < now and self.date_trim < now:
+		if self.date_from < now:
 			raise ValidationError('Cannot add a Job in the past')
 
-		duration_sec = (self.date_trim - self.date_from).total_seconds()
-
-		if duration_sec < self.DURATION_SEC_MIN:
+		if self.duration_sec < self.DURATION_SEC_MIN:
 			raise ValidationError('Job is too short: {}sec < {}sec'.format(
-				duration_sec,
+				self.duration_sec,
 				self.DURATION_SEC_MIN
 			))
 
-		if duration_sec > self.DURATION_SEC_MAX:
+		if self.duration_sec > self.DURATION_SEC_MAX:
 			raise ValidationError('Job is too long: {}sec > {}sec'.format(
-				duration_sec,
+				self.duration_sec,
 				self.DURATION_SEC_MAX
 			))

@@ -18,19 +18,13 @@ class BaseJobResultProcessor:
 	def __init__(self, app_config):
 		pass
 
-	def handle_event(self, res, exc, tb):
+	def handle_event(self, res, exc, tb_str):
 
 		if exc:
-			self.handle_error(exc, tb)
+			self.handle_error(exc, tb_str)
 		else:
 			data = pydash.get(res, 'data')
 			self.handle_data(data)
-
-		# notify_signal = blinker.signal('notifications')
-		# notify_signal.send(
-		# 	cls,
-		# 	x=1,
-		# )
 
 	def handle_data(self, data):
 		'''
@@ -48,7 +42,7 @@ class BaseJobResultProcessor:
 				'job kind [%s] with data [%s]'
 			),
 			self.KIND,
-			self.data,
+			data,
 			extra={
 				'data': data
 			}
@@ -62,24 +56,23 @@ class BaseJobResultProcessor:
 		# 	},
 		# )
 
-	def handle_error(self, exc, tb):
+	def handle_error(self, exc, tb_str):
 		'''
 		This method will remains un-overridden in inherited classes.
 
 		Main purpose: to forward the exception info (from job) to notification
 		system
 
-		[description]
 		:param exc: Job exception
 		:type exc: Exception
 		:param tb: Job exception traceback
 		:type tb: Traceback
 		'''
 		log.info(
-			'Job of kind [%s] ended with an exception [%s]',
+			'Job of kind [%s] ended and raised an exception [%s]',
 			self.KIND,
 			exc,
-			exc_info=(type(exc), exc, tb),
+			exc_info=(type(exc), exc, exc.__traceback__),
 			extra={
 				'error': exc
 			}

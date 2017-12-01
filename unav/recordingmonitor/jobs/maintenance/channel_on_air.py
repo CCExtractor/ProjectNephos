@@ -51,7 +51,7 @@ class ChannelChecker:
 		# BUG: move to ./worker.py
 		self.path_var = app_config.get('capture.paths.jobsRoot')
 
-		self.__cleanup_dir = app_config.get('scheduler.maintenance.rmdir')
+		self.__cleanup_dir = app_config.get('maintenance.rmdir')
 
 		# TODO: use class, not type()
 		self.config = type('__internal_config', (), {})
@@ -307,5 +307,5 @@ class ChannelOnAirJobResultProcessor(BaseJobResultProcessor):
 		else:
 			log.debug('ChannelOnAirJobResultProcessor: no changes in channels statuses')
 
-	# def handle_error(cls, exc, tb):
+	# def handle_error(cls, exc, tb_str):
 	# 	pass

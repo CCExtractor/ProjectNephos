@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+'''
+DO NOT mv (move) THIS FILE ACROSS DIRECTORIES
+
+MUST BE IN THE ROOT DIRECTORY
+'''
+
 import os
 
 

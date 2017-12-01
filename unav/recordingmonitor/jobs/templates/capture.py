@@ -11,6 +11,8 @@ from ..syscommand import CaptureCommand
 
 from ...models.tv import Channel
 
+from ..result_processor import BaseJobResultProcessor
+
 log = getLogger(__name__)
 
 
@@ -39,6 +41,20 @@ class CaptureStreamJob(TemplatedScriptJob):
 			for after_cmd_config in after_cmd_config_list:
 				command = self.create_command_from_config(after_cmd_config, self.job_params)
 				self.commands_list.append(command)
+
+	# TODO: override RUN method and replace KIND in the result value
+
+
+class CaptureJobResultProcessor(BaseJobResultProcessor):
+
+	# TODO: use package name
+	KIND = 'unav.recordingmonitor.jobs.templates.capture'
+
+	def __init__(self, app_config):
+		super().__init__(app_config)
+
+	# def handle_data(self, data):
+	# 	pass
 
 
 start = StarterFabric(CaptureStreamJob)
