@@ -19,6 +19,7 @@
 
 /build/*
 /dist/*
+/software/multicat
 
 # ====================
 # Coverage and test results:
