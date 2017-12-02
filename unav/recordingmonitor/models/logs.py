@@ -27,7 +27,8 @@ class TaskLogRecord(MixinIdGuid, Model):
 	trace = sa.Column(sa.String)
 	message = sa.Column(sa.String)
 
-	job_info_id = sa.Column(TypeUuid)
+	job_info_ID = sa.Column(TypeUuid)
+	job_launch_ID = sa.Column(TypeUuid)
 	job_template_name = sa.Column(sa.String)
 	data = sa.Column(TypeJson)
 
@@ -40,7 +41,8 @@ class TaskLogRecord(MixinIdGuid, Model):
 		trace=None,
 		message=None,
 		ts=None,
-		job_info_id=None,
+		job_info_ID=None,
+		job_launch_ID=None,
 		job_template_name=None,
 		data=None
 	):
@@ -50,7 +52,8 @@ class TaskLogRecord(MixinIdGuid, Model):
 		self.message = message
 		self.ts = ts
 
-		self.job_info_id = job_info_id
+		self.job_info_ID = job_info_ID
+		self.job_launch_ID = job_launch_ID
 		self.job_template_name = job_template_name
 		self.data = data
 

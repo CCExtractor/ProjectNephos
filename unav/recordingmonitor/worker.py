@@ -4,7 +4,7 @@ import os
 
 import re
 import logging
-import datetime
+import arrow
 
 import pydash
 from pytz import timezone
@@ -16,6 +16,7 @@ from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.executors.pool import ThreadPoolExecutor
 
 from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 # EVENTS
@@ -98,6 +99,8 @@ class ScheduledWorker:
 			timezone=self.tz,
 		)
 
+		log.info('scheduler configured, timezone=[%s]', self.tz)
+
 		# ----------------------------------------------------------------------
 		# connect event listeners
 		# ----------------------------------------------------------------------
@@ -135,11 +138,12 @@ class ScheduledWorker:
 
 			trig = IntervalTrigger(
 				minutes=interval_min,
-				start_date=datetime.datetime.now() + datetime.timedelta(seconds=5)
+				start_date=arrow.get().shift(seconds=5).datetime,
+				timezone=self.tz,
 			)
 
 			# TODO: it is not a good idea to pass the entire app_config to the job. But it's the fastest way for implementation
-			all_job_args = [self.__app_config]
+			all_job_args = [app_config]
 
 			fn = 'unav.recordingmonitor.jobs.maintenance.{}:start'.format(job_type)
 
@@ -188,6 +192,29 @@ class ScheduledWorker:
 		'''
 		return self._scheduler.get_jobs(jobstore='default')
 
+	def _create_trigger_from_repeat(self, date_from, repeat):
+
+		_cron = pydash.get(repeat, 'cron')
+		_interval = pydash.get(repeat, 'interval')
+
+		if _cron:
+			_cron['start_date'] = date_from
+			_cron['end_date'] = _cron.pop('date_trim', None)
+			_cron['timezone'] = self.tz
+			trig = CronTrigger(**_cron)
+		elif _interval:
+			_interval['start_date'] = date_from
+			_interval['end_date'] = _interval.pop('date_trim', None)
+			_interval['timezone'] = self.tz
+			trig = IntervalTrigger(**_interval)
+		else:
+			trig = DateTrigger(
+				run_date=date_from,
+				timezone=self.tz
+			)
+
+		return trig
+
 	def job_add(self, job_info_model):
 		'''
 		Add a job to scheduler
@@ -208,6 +235,7 @@ class ScheduledWorker:
 		duration_sec = ji.duration_sec
 		channel_ID = ji.channel_ID
 		job_params = ji.job_params
+		repeat = ji.repeat
 
 		tpl_name = self.__re_clean.sub('', template_name)
 
@@ -230,10 +258,10 @@ class ScheduledWorker:
 
 		fn_name = 'unav.recordingmonitor.jobs.templates.{}:start'.format(job_type)
 
-		trig = DateTrigger(run_date=date_from)
-		missfire_sec = duration_sec
+		trig = self._create_trigger_from_repeat(date_from.datetime, repeat)
+		log.debug('trigger for job [%s]', trig)
 
-		job_dir = os.path.join(self.jobs_root, 'jobs', str(job_info_ID))
+		missfire_sec = duration_sec
 
 		eff_job_params = {}
 		eff_job_params.update(job_params)
@@ -242,7 +270,7 @@ class ScheduledWorker:
 		eff_job_params.update({
 			'job_ID': job_info_ID,
 			'job_main_duration_sec': duration_sec,
-			'job_dir': job_dir,
+			'job_root_dir': self.jobs_root,
 			'job_rmdir': self.__app_config.get('capture.rmdir', True),
 
 			'channel_ID': channel_ID,
@@ -285,10 +313,11 @@ class ScheduledWorker:
 		)
 
 		log.info(
-			'job added: name [%s] template[%s] start at [%s]',
+			'job added: name [%s] template[%s] start at [%s], trigger [%s]',
 			ji.name,
 			ji.template_name,
-			ji.date_from
+			ji.date_from,
+			trig,
 		)
 
 		return sj

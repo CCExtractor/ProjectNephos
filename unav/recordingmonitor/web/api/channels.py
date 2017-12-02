@@ -13,8 +13,6 @@ from ...models.tv import Channel
 
 from ._utils import marshal_nullable_with
 from ._utils import DateTimeWithUtc
-# from ._utils import to_datetime
-# from ._utils import to_dict
 
 
 log = logging.getLogger(__name__)

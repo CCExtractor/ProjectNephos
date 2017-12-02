@@ -49,7 +49,7 @@ class ChannelChecker:
 	def __init__(self, app_config, channel_ID):
 
 		# BUG: move to ./worker.py
-		self.path_var = app_config.get('capture.paths.jobsRoot')
+		self.jobs_root = app_config.get('capture.paths.jobsRoot')
 
 		self.__cleanup_dir = app_config.get('maintenance.rmdir')
 
@@ -87,7 +87,7 @@ class ChannelChecker:
 		self.channel_status = cs
 
 		# 2 create temporary dir
-		self.cwd = os.path.join(self.path_var, 'maintenance', 'channel_on_air', str(self.ID))
+		self.cwd = os.path.join(self.jobs_root, 'maintenance', 'channel_on_air', str(self.ID))
 		os.makedirs(self.cwd)
 
 		return self

@@ -39,7 +39,6 @@ _repeat_interval_fields = {
 	'hours':       fields.String,
 	'minutes':     fields.String,
 	'seconds':     fields.String,
-	'start_date':  fields.String,
 	'date_trim':   DateTimeWithUtc,
 }
 
@@ -90,13 +89,12 @@ class JobsListResource(Resource):
 		ji = JobInfo(**args)
 
 		# DBG
-		print('!' * 40)
-		print('!' * 40)
-		print('DBG')
-		print('!' * 40)
-		print('!' * 40)
-		ji.date_from = arrow.now().shift(seconds=3).datetime
-		ji.duration_sec = 10
+		# print('!' * 40)
+		# print('!' * 40)
+		# print('DBG')
+		# print('!' * 40)
+		# print('!' * 40)
+		# ji.date_from = arrow.now().shift(seconds=3)
 
 		ji.validate()
 

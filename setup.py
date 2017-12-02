@@ -139,6 +139,7 @@ setup(
 		'flask            == 0.12.2',
 		'APScheduler      == 3.3.1',
 		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
+		'SQLAlchemy-Utils >= 0.32.21,  < 0.32.99',
 		'Flask-SQLAlchemy >= 2.3.0,    < 2.3.99',
 		'Jinja2           >= 2.10,     < 2.99',
 
