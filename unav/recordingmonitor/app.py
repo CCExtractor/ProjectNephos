@@ -11,8 +11,6 @@ from .version import __release__
 
 from .worker import ScheduledWorker
 from .web import OurFlask
-# from .db import DB
-# from .db import WEBDB
 
 # DBG
 # from .jobs.templates.scripttpl import TemplatedScriptJob

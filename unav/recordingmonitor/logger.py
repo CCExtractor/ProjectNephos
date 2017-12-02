@@ -35,7 +35,8 @@ class SQLAlchemyHandler(logging.Handler):
 		qw = {}
 		qw['logger'] = dd.pop('name', None)
 		qw['level'] = dd.pop('levelname', None)
-		qw['job_info_id'] = dd.pop('job_info_id', None)
+		qw['job_info_ID'] = dd.pop('job_info_ID', None)
+		qw['job_launch_ID'] = dd.pop('job_launch_ID', None)
 		qw['job_template_name'] = dd.pop('job_template_name', None)
 		qw['trace'] = trace
 		qw['message'] = message

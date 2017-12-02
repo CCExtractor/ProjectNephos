@@ -270,7 +270,7 @@ jobs:
         # - cmd: cp stream2.ts /tmp/mon/{job_ID}.ts
 
         # send with FTP:
-        - cmd: curl -T stream.ts ftp://{ftp_host} --user {ftp_user}:{ftp_password}
+        - cmd: curl --silent --fail --show-error -T stream.ts ftp://{ftp_host} --user {ftp_user}:{ftp_password}
 
 db:
   connection:
