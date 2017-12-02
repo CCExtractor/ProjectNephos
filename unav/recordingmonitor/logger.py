@@ -98,6 +98,12 @@ class ExtendExtraLogAdapter(logging.LoggerAdapter):
 
 
 class EnsureFolderFileHandler(logging.FileHandler):
+	'''
+	The standard logger, but this version ensures that directory for log file
+	exists on create
+
+	https://stackoverflow.com/a/20667049/1115187
+	'''
 	def __init__(self, filename, mode='a', encoding=None, delay=False):
 		os.makedirs(os.path.dirname(filename), exist_ok=True)
 		logging.FileHandler.__init__(self, filename, mode, encoding, delay)
