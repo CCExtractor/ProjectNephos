@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import arrow
+# import arrow
 
 from flask import current_app
 
 from flask_restful import Resource
 from flask_restful import reqparse
-from flask_restful import marshal_with
+# from flask_restful import marshal_with
 from flask_restful import fields
 
 from ...models.jobs import JobInfo
+
 from ._utils import marshal_nullable_with
 from ._utils import to_datetime
 from ._utils import to_dict
@@ -53,6 +54,7 @@ _job_fields = {
 	'name': fields.String,
 	'date_from': DateTimeWithUtc,
 	'duration_sec': fields.Integer,
+	'is_removed': fields.Boolean,
 	'repeat': fields.Nested(_repeat_fields, allow_null=True)
 }
 
@@ -67,7 +69,33 @@ _parser.add_argument('channel_ID')
 _parser.add_argument('repeat', type=to_dict)
 
 
-class JobsListResource(Resource):
+# BUG: refactor
+# BUG: refactor
+# BUG: refactor
+# BUG: refactor
+# BUG: refactor
+from werkzeug.exceptions import HTTPException
+
+
+class JobAlreadyDisabled(HTTPException):
+	code = 409
+
+
+class NotFoundError(HTTPException):
+	code = 404
+
+
+class _WithSchedulerAndDb:
+	@property
+	def app_scheduler(self):
+		return current_app.app.scheduler
+
+	@property
+	def db(self):
+		return current_app.db
+
+
+class JobsListResource(_WithSchedulerAndDb, Resource):
 
 	@marshal_nullable_with(_job_fields, envelope='data')
 	def get(self):
@@ -98,22 +126,19 @@ class JobsListResource(Resource):
 
 		ji.validate()
 
-		db = current_app.db
-		sched = current_app.app.scheduler
-
-		db.session.add(ji)
+		self.db.session.add(ji)
 		# REQUIRED! only after commit ji will have a real ID
-		db.session.commit()
+		self.db.session.commit()
 
-		sj = sched.job_add(ji)
+		sj = self.app_scheduler.job_add(ji)
 
-		ji.job_id = sj.id
-		db.session.commit()
+		ji.job_ID = sj.id
+		self.db.session.commit()
 
 		return ji
 
 
-class JobsResource(Resource):
+class JobsResource(_WithSchedulerAndDb, Resource):
 
 	@marshal_nullable_with(_job_fields, envelope='data')
 	def get(self, ID):
@@ -121,3 +146,22 @@ class JobsResource(Resource):
 		jj = JobInfo.query.get(ID)
 
 		return jj
+
+	@marshal_nullable_with({}, envelope='data')
+	def delete(self, ID):
+
+		ji = JobInfo.query.get(ID)
+		if not ji:
+			raise NotFoundError('Job not found')
+
+		if ji.is_removed:
+			raise JobAlreadyDisabled('Job already disabled')
+
+		self.app_scheduler.job_remove(ji.job_ID)
+
+		ji.job_ID = None
+		ji.is_removed = True
+
+		self.db.session.commit()
+
+		return None

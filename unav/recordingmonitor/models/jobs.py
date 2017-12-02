@@ -23,8 +23,9 @@ class JobInfo(MixinIdGuid, Model):
 	duration_sec = sa.Column(sa.Integer)
 	template_name = sa.Column(sa.String(4800))
 	job_params = sa.Column(TypeJson)
-	job_id = sa.Column(sa.String(96))
+	job_ID = sa.Column(sa.String(96))
 	repeat = sa.Column(TypeJson)
+	is_removed = sa.Column(sa.Boolean, default=False)
 	channel_ID = sa.Column(TypeUuid, ForeignKey('channel.ID'), nullable=True)
 
 	job_launch_list = relationship('JobLaunch', back_populates='job_info')

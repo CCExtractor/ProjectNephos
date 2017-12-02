@@ -19,9 +19,6 @@ log = logging.getLogger(__name__)
 
 
 # output
-_null_fields = {
-}
-
 _channel_fields = {
 	'ID': fields.String,
 	'name': fields.String,
@@ -90,7 +87,7 @@ class ChannelsResource(Resource):
 
 		return ch
 
-	@marshal_nullable_with(_null_fields, envelope='data')
+	@marshal_nullable_with({}, envelope='data')
 	def delete(self, ID):
 
 		db = current_app.db

@@ -47,6 +47,7 @@ from .jobs.maintenance.free_space import FreeSpaceJobResultProcessor
 from .jobs.maintenance.channel_on_air import ChannelOnAirJobResultProcessor
 from .jobs.result_processor import BaseJobResultProcessor
 
+
 log = logging.getLogger(__name__)
 
 
@@ -321,6 +322,10 @@ class ScheduledWorker:
 		)
 
 		return sj
+
+	def job_remove(self, ID):
+
+		self._scheduler.remove_job(ID)
 
 
 class EventJobExecutedHandler:
