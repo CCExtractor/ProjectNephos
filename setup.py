@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 VERSION = (0, 0, 9)
-VERSION_SUFFIX = 'dev.4'
+VERSION_SUFFIX = 'dev.5'
 #VERSION_SUFFIX = ''
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])

@@ -23,6 +23,7 @@ class JobInfo(MixinIdGuid, Model):
 	template_name = sa.Column(sa.String(4800))
 	job_params = sa.Column(TypeJson)
 	job_id = sa.Column(sa.String(96))
+	repeat = sa.Column(TypeJson)
 
 	channel_ID = sa.Column(TypeUuid, ForeignKey('channel.ID'), nullable=True)
 

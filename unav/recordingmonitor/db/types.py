@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import uuid
+
 # just a convenient way to import simplejson with fallback to python.json
 from flask import json
 
-from sqlalchemy.types import TypeDecorator, CHAR, VARCHAR, JSON
+from sqlalchemy.types import TypeDecorator
+from sqlalchemy.types import CHAR
+from sqlalchemy.types import VARCHAR
+from sqlalchemy.types import JSON
 from sqlalchemy.dialects.postgresql import UUID as postgreUUID
 
 # from sqlalchemy.dialects.postgresql import JSON as postgreJSON
