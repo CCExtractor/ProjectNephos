@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import logging
 import traceback
 
@@ -94,3 +95,9 @@ class ExtendExtraLogAdapter(logging.LoggerAdapter):
 
 		kwargs['extra'] = kw
 		return msg, kwargs
+
+
+class EnsureFolderFileHandler(logging.FileHandler):
+	def __init__(self, filename, mode='a', encoding=None, delay=False):
+		os.makedirs(os.path.dirname(filename), exist_ok=True)
+		logging.FileHandler.__init__(self, filename, mode, encoding, delay)

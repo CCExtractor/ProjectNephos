@@ -302,9 +302,9 @@ log:
       stream: ext://sys.stdout
       level: NOTSET
     file:
-      class: logging.FileHandler
+      class: unav.recordingmonitor.logger.EnsureFolderFileHandler
       formatter: simple
-      filename: recordingmonitor.log
+      filename: log/recordingmonitor.log
       level: NOTSET
   root:
     level: NOTSET

@@ -1,6 +1,7 @@
 # ====================
 # Logs and temporary stuff
 
+/log/
 /recordingmonitor.log
 /var/
 /tmp/
