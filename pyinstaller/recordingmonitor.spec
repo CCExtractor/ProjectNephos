@@ -15,6 +15,8 @@ a = Analysis(
 	datas=data_files,
 	hiddenimports=[
 		'coloredlogs',
+		'sqlalchemy.ext.baked',
+
 		'unav.recordingmonitor.jobs.maintenance',
 
 		'unav.recordingmonitor.jobs.maintenance.free_space',
