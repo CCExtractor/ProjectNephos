@@ -188,8 +188,8 @@ docker build -f docker/recordingmonitor/Dockerfile -t unav/recordingmonitor .
 
 ```bash
 curl -X POST \
-    http://127.0.0.1:5000/api/v0/channels
-    -H 'Content-TYpe: application/json'
+    http://127.0.0.1:5000/api/v0/channels \
+    -H 'Content-TYpe: application/json' \
     -d '{
         "name": "TVE1",
         "ip_string": "239.255.20.1:1234"
@@ -199,19 +199,26 @@ curl -X POST \
 ### Job: create
 
 ```bash
+
 curl -X POST \
     http://127.0.0.1:5000/api/v0/jobs \
     -H 'content-type: application/json' \
     -d '{
         "name": "rick and mortie",
-        "date_from": "2017-10-07T14:00:00+0500",
-        "date_trim": "2017-12-12T14:00:05+0500",
+        "date_from": "2017-12-02T17:40:00+0500",
+        "duration_sec": 15,
+        "repeat": {
+          "interval": {
+            "minutes": 1,
+            "date_trim": "2017-12-02T17:45:00+0500"
+          }
+        },
         "template_name": "capture",
-        "channel_ID": "1b5c65e4-a03e-430c-a554-be6d3a41e721",
+        "channel_ID": "d327c73c-1577-42d4-843c-ec494425cec4",
         "job_params": {
-            "message": "nothing",
-            "host": "localhost",
-            "port": 1234
+          "ftp_host": "127.0.0.1",
+          "ftp_user": "user",
+          "ftp_password": "123"
         }
     }'
 ```
