@@ -4,9 +4,9 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = (0, 0, 11)
-VERSION_SUFFIX = 'dev.5'
-VERSION_SUFFIX = ''
+VERSION = (0, 1, 2)
+VERSION_SUFFIX = 'dev.2'
+#VERSION_SUFFIX = ''
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX
@@ -140,6 +140,7 @@ setup(
 		'APScheduler      == 3.3.1',
 		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
 		'SQLAlchemy-Utils >= 0.32.21,  < 0.32.99',
+
 		'Flask-SQLAlchemy >= 2.3.0,    < 2.3.99',
 		'Jinja2           >= 2.10,     < 2.99',
 

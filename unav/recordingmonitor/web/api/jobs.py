@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-# import arrow
 
 from flask import current_app
 
@@ -13,7 +12,7 @@ from flask_restful import fields
 from ...models.jobs import JobInfo
 
 from ._utils import marshal_nullable_with
-from ._utils import to_datetime
+from ._utils import to_arrow_datetime
 from ._utils import to_dict
 from ._utils import DateTimeWithUtc
 
@@ -61,7 +60,7 @@ _job_fields = {
 # input
 _parser = reqparse.RequestParser()
 _parser.add_argument('name')
-_parser.add_argument('date_from', type=to_datetime)
+_parser.add_argument('date_from', type=to_arrow_datetime)
 _parser.add_argument('duration_sec', type=int)
 _parser.add_argument('template_name')
 _parser.add_argument('job_params', type=to_dict)
@@ -112,6 +111,7 @@ class JobsListResource(_WithSchedulerAndDb, Resource):
 	@marshal_nullable_with(_job_fields, envelope='data')
 	def post(self):
 		args = _parser.parse_args()
+
 		log.debug('job create, args: %s', args)
 
 		ji = JobInfo(**args)

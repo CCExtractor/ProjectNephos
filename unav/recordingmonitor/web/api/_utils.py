@@ -12,11 +12,11 @@ from flask_restful import fields
 # ------------------------------------------------------------------------------
 # PARSE ARGS
 # ------------------------------------------------------------------------------
-def to_datetime(arg):
+def to_arrow_datetime(arg):
 	if arg is None:
 		return arg
 	d = arrow.get(arg)
-	return d.datetime
+	return d
 
 
 def to_dict(arg):

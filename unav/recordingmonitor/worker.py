@@ -20,9 +20,6 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 # EVENTS
-from apscheduler.events import EVENT_JOB_ADDED
-from apscheduler.events import EVENT_JOB_SUBMITTED
-from apscheduler.events import EVENT_JOB_MODIFIED
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.events import EVENT_JOB_ERROR
 
@@ -59,7 +56,7 @@ class ScheduledWorker:
 
 		# config:
 		connection_string = app_config.connection_string
-		tz = str(app_config.get('scheduler.tz', 'utc'))
+		tzname = str(app_config.get('scheduler.tz', 'utc'))
 		jobs_limit = int(app_config.get('scheduler.jobsLimit', 10))
 		jobs_root = str(app_config.get('capture.paths.jobsRoot'))
 
@@ -90,17 +87,17 @@ class ScheduledWorker:
 		}
 		s = BackgroundScheduler()
 		self._scheduler = s
-		self.tz = timezone(tz)
+		self._tz = timezone(tzname)
 		self.jobs_root = jobs_root
 
 		self._scheduler.configure(
 			jobstores=jobstores,
 			executors=executors,
 			job_defaults=job_defaults,
-			timezone=self.tz,
+			timezone=self._tz,
 		)
 
-		log.info('scheduler configured, timezone=[%s]', self.tz)
+		log.info('scheduler configured, timezone=[%s]', self._tz)
 
 		# ----------------------------------------------------------------------
 		# connect event listeners
@@ -119,7 +116,7 @@ class ScheduledWorker:
 	def _connect_listeners(self, app_config):
 		s = self._scheduler
 
-		executed_listener = EventJobExecutedHandler(app_config)
+		executed_listener = JobExecutedEventHandler(app_config)
 		s.add_listener(executed_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
 		# s.add_listener(
@@ -140,7 +137,7 @@ class ScheduledWorker:
 			trig = IntervalTrigger(
 				minutes=interval_min,
 				start_date=arrow.get().shift(seconds=5).datetime,
-				timezone=self.tz,
+				timezone=self._tz,
 			)
 
 			# TODO: it is not a good idea to pass the entire app_config to the job. But it's the fastest way for implementation
@@ -193,29 +190,6 @@ class ScheduledWorker:
 		'''
 		return self._scheduler.get_jobs(jobstore='default')
 
-	def _create_trigger_from_repeat(self, date_from, repeat):
-
-		_cron = pydash.get(repeat, 'cron')
-		_interval = pydash.get(repeat, 'interval')
-
-		if _cron:
-			_cron['start_date'] = date_from
-			_cron['end_date'] = _cron.pop('date_trim', None)
-			_cron['timezone'] = self.tz
-			trig = CronTrigger(**_cron)
-		elif _interval:
-			_interval['start_date'] = date_from
-			_interval['end_date'] = _interval.pop('date_trim', None)
-			_interval['timezone'] = self.tz
-			trig = IntervalTrigger(**_interval)
-		else:
-			trig = DateTrigger(
-				run_date=date_from,
-				timezone=self.tz
-			)
-
-		return trig
-
 	def job_add(self, job_info_model):
 		'''
 		Add a job to scheduler
@@ -259,7 +233,7 @@ class ScheduledWorker:
 
 		fn_name = 'unav.recordingmonitor.jobs.templates.{}:start'.format(job_type)
 
-		trig = self._create_trigger_from_repeat(date_from.datetime, repeat)
+		trig = _create_trigger_from_repeat(date_from, repeat, self._tz)
 		log.debug('trigger for job [%s]', trig)
 
 		missfire_sec = duration_sec
@@ -328,7 +302,43 @@ class ScheduledWorker:
 		self._scheduler.remove_job(ID)
 
 
-class EventJobExecutedHandler:
+def _create_trigger_from_repeat(date_from, repeat, tz):
+
+	def _pop_date_trim(obj):
+		_str = obj.pop('date_trim', None)
+		if _str is None:
+			return None
+
+		return arrow.get(_str).datetime
+
+	_dt = date_from.datetime
+	# TODO: try to create PYTZ timezone from DT...
+	#_tz = arrow2pytz(date_from.tzinfo) # or tz
+	_tz = tz
+
+	_cron = pydash.get(repeat, 'cron')
+	_interval = pydash.get(repeat, 'interval')
+
+	if _cron:
+		_cron['start_date'] = _dt
+		_cron['end_date'] = _pop_date_trim(_cron)
+		_cron['timezone'] = _tz
+		trig = CronTrigger(**_cron)
+	elif _interval:
+		_interval['start_date'] = _dt
+		_interval['end_date'] = _pop_date_trim(_interval)
+		_interval['timezone'] = _tz
+		trig = IntervalTrigger(**_interval)
+	else:
+		trig = DateTrigger(
+			run_date=_dt,
+			timezone=_tz
+		)
+
+	return trig
+
+
+class JobExecutedEventHandler:
 
 	def __init__(self, app_config):
 		self.base_job_result_processor = BaseJobResultProcessor(app_config)
