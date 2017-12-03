@@ -131,7 +131,12 @@ class ChannelChecker:
 
 		# 3 save result:
 		self.res = {
-			'channel_ID': self.channel_ID,
+			'channel': {
+				'ID': self.channel_ID,
+				'name': self.channel.name,
+				'name_short': self.channel.name_short,
+				'ip_string': self.channel.ip_string,
+			},
 			'ts': cs.ts,
 			'old': {
 				'status': old_status,
@@ -260,23 +265,11 @@ class ChannelOnAirJobResultProcessor(BaseJobResultProcessor):
 			ts = pydash.get(channel_info, 'ts')
 
 			if old_ok and not new_ok:
-				channels_went_down.append({
-					'name': 'TODO: fill channel name',
-					'channel_ID': channel_ID_str,
-					'channel_status': new_st,
-				})
+				channels_went_down.append(channel_info)
 			elif not old_ok and not new_ok:
-				channels_stay_down.append({
-					'name': 'TODO: fill channel name',
-					'channel_ID': channel_ID_str,
-					'channel_status': new_st,
-				})
+				channels_stay_down.append(channel_info)
 			elif not old_ok and new_ok:
-				channels_went_up.append({
-					'name': 'TODO: fill channel name',
-					'channel_ID': channel_ID_str,
-					'channel_status': new_st,
-				})
+				channels_went_up.append(channel_info)
 
 		something_changed = len(channels_went_down) + len(channels_went_up)
 		down_counter = len(channels_stay_down)
@@ -296,7 +289,7 @@ class ChannelOnAirJobResultProcessor(BaseJobResultProcessor):
 		elif down_counter > 0:
 			self.notify_signal.send(
 				self.KIND,
-				notification_code='channels_statuses_are_down',
+				notification_code='channels_statuses_existing_down',
 				data={
 					'ts': ts,
 					'channels_went_down': channels_went_down,
