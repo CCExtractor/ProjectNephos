@@ -227,8 +227,8 @@ notifications:
       ssl: False  # True
       tls: False
 
-      username: usr
-      password: pwd
+      username: null
+      password: null
 
     subject: 'Recording Monitor'
     from: recordingmonitor@unav.es

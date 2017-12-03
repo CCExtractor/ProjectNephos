@@ -80,7 +80,8 @@ class EmailsNotifier:
 			if self.smtp_tls:
 				server.starttls()
 
-			server.login(user=self.username, password=self.password)
+			if self.username or self.password:
+				server.login(user=self.username, password=self.password)
 
 			# server.set_debuglevel(1)
 			server.send_message(emsg)
