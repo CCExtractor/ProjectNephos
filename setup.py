@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 VERSION = (0, 1, 2)
-VERSION_SUFFIX = 'dev.2'
+VERSION_SUFFIX = 'dev.5'
 #VERSION_SUFFIX = ''
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
@@ -134,25 +134,26 @@ setup(
 	test_suite='pytest',
 
 	install_requires=[
-		'raven[flask]     >=6.3.0',
-		'blinker          >= 1.4,      < 1.4.99',
-		'flask            == 0.12.2',
-		'APScheduler      == 3.3.1',
-		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
-		'SQLAlchemy-Utils >= 0.32.21,  < 0.32.99',
-
-		'Flask-SQLAlchemy >= 2.3.0,    < 2.3.99',
-		'Jinja2           >= 2.10,     < 2.99',
-
-		'flask-restful    >= 0.3.6,    < 0.3.99',
-		#'flask-restplus   >= 0.10.1,   < 0.10.99',
-		'flask-socketio   >= 2.7.0',
-
+		'python-daemon-3K >= 1.5.8,    < 1.5.99',
 		'PyYAML           == 3.12',
 		'python-dotenv    == 0.7.1',
 		'coloredlogs      == 7.3',
 		'pydash           == 4.2.1',
 		'arrow            >= 0.10.0,   < 0.10.99',
+
+		'raven[flask]     >=6.3.0',
+		'blinker          >= 1.4,      < 1.4.99',
+		'APScheduler      == 3.3.1',
+		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
+		'SQLAlchemy-Utils >= 0.32.21,  < 0.32.99',
+
+		'flask            == 0.12.2',
+		'Flask-SQLAlchemy >= 2.3.0,    < 2.3.99',
+		'Jinja2           >= 2.10,     < 2.99',
+		'flask-restful    >= 0.3.6,    < 0.3.99',
+		#'flask-restplus   >= 0.10.1,   < 0.10.99',
+		'flask-socketio   >= 2.7.0',
+
 
 		# 'simplejson       == 3.11.1',
 		# 'pony             == 0.7.2',

@@ -4,6 +4,8 @@ import argparse
 import dotenv
 import atexit
 
+import daemon
+
 from .version import __version__
 from .version import __description__
 from .version import __title__
@@ -11,6 +13,7 @@ from .version import __copyright__
 from .version import __release__
 
 from .app import Application
+from .utils.context import nullcontext
 
 
 __all__ = [
@@ -23,8 +26,7 @@ __all__ = [
 ]
 
 
-def create_app():
-
+def main():
 	# ------------------------------------------------------------
 	# ARGS PARSE:
 	# ------------------------------------------------------------
@@ -35,6 +37,8 @@ def create_app():
 
 	aparser.add_argument('--config-path', '-c', type=str,
 		help='Path to configuration file', default='recordingmonitor.yml')
+	aparser.add_argument('--daemonize', '-d', action='store_true',
+		help='Run RecordingMonitor as a daemon')
 
 	silent_parser = aparser.add_mutually_exclusive_group(required=False)
 	silent_parser.add_argument('--silent', dest='silent', action='store_true',
@@ -58,24 +62,29 @@ def create_app():
 		))
 		print('-' * 40)
 
+	# ------------------------------------------------------------
+
 	dotenv.load_dotenv('.env')
 
+	# ------------------------------------------------------------
+	# Init app
+	# ------------------------------------------------------------
 	wapp = Application(
 		config_path=args.config_path,
 	)
-
-	return wapp
-
-
-def main():
-	wapp = create_app()
 
 	def _cleanup():
 		wapp.cleanup()
 	atexit.register(_cleanup)
 
-	wapp.run()
-	wapp.cleanup()
+	if False and args.daemonize:
+		ctx = daemon.DaemonContext()
+	else:
+		ctx = nullcontext()
+
+	with ctx:
+		wapp.run()
+		wapp.cleanup()
 
 
 if __name__ == '__main__':
