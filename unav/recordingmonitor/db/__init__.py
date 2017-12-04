@@ -55,14 +55,6 @@ class FlaskSQLAlchemy(FlaskSQLAlchemyOriginal):
 		return self.Model
 
 
-# def init_db():
-# 	# import all modules here that might define models so that
-# 	# they will be registered properly on the metadata.  Otherwise
-# 	# you will have to import them first before calling init_db()
-# 	import yourapplication.models
-# 	Base.metadata.create_all(bind=engine)
-
-
 def get_session(connection_string):
 	connect_args = None
 	if connection_string.startswith('sqlite'):
@@ -80,44 +72,3 @@ def get_session(connection_string):
 
 	session = SessionClass()
 	return session
-
-
-# WEBDB = SQLAlchemy(metadata=metadata)
-
-
-# class __NotAFlaskDB:
-
-# 	from sqlalchemy import Column
-# 	from sqlalchemy import Integer
-# 	from sqlalchemy import String
-# 	from sqlalchemy import DateTime
-# 	from sqlalchemy.types import TIMESTAMP
-
-# 	Model = declarative_base()
-
-# 	def __init__(self):
-# 		self._engine = None
-# 		self._model = None
-# 		self._Session = None
-
-# 	def init(self, uri):
-# 		self._engine = create_engine(uri)
-# 		self._model = self.Model
-
-# 		# create session generator
-# 		Session = sessionmaker()
-# 		Session.configure(bind=self._engine)
-
-# 		self._Session = Session
-
-# 	def create_all(self):
-# 		self._model.metadata.create_all(bind=self._engine)
-# 		# return self._meta.create_all()
-
-# 	@property
-# 	def session(self):
-# 		session = self._Session()
-# 		return session
-
-
-# DB = __NotAFlaskDB()
