@@ -13,6 +13,7 @@ from .jobs import JobsListResource
 from .channels import ChannelsResource
 from .channels import ChannelsListResource
 from .channels import ChannelsStatusResource
+from .about import PingResource
 
 log = getLogger(__name__)
 
@@ -54,3 +55,4 @@ api.add_resource(JobsResource,           '/jobs/<string:ID>')
 api.add_resource(ChannelsListResource,   '/channels')
 api.add_resource(ChannelsResource,       '/channels/<string:ID>')
 api.add_resource(ChannelsStatusResource, '/channels/<string:ID>/status')
+api.add_resource(PingResource,           '/about/ping')
