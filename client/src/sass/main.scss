@@ -20,3 +20,9 @@
 @import "override-bootstrap";
 
 @import "glyphicons";
+
+
+span.oe_textdirection {
+	unicode-bidi: bidi-override;
+	direction: rtl;
+}
