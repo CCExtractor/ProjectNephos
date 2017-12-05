@@ -2,12 +2,58 @@
 
 [![SLACK](https://img.shields.io/badge/slack-50/2-pink.svg)](https://xrvflgrp001.slack.com)
 
-----------------------------------------
-
-_so the first task would be record for example from TVE1 from 15:00 to 15:45
-(server local time, which is UTC+1 I think)_
+--------------------------------------------------------------------------------
 
 ## Quickstart
+
+This guide for the **redhen** server (depends on paths and environment).
+
+1. Download the latest `unav-recordingmonitor-bundle-x.x.x.tgz` from
+    [GitHub Releases](https://github.com/XirvikMadrid/RecordingMonitor/releases)
+2. Extract to the `/home/redhen/recordingmonitor`
+3. Add the following line to crontab ([why exec](http://www.somacon.com/p38.php)):
+    `*/15 * * * * root exec /bin/bash /home/redhen/recordingmonitor/scripts/public/start.sh`
+4. cron will start (and check the app is running) every 15 minutes. Even
+    [without a reboot](https://stackoverflow.com/a/10193931/1115187)
+
+It it a rough file-tree structure (correct for version 0.1.3):
+
+```
+/home/redhen/recordingmonitor
+├── recordingmonitor           // yes, it's recordingmonitor in recordingmonitor
+│   │
+│   ├── array.so               // \
+│   ├── base_library.zip       //  \
+│   ├── xxxxxxxx.so            //   * - 3d-party libraries
+│   ├── ...........            //  /
+│   ├── binascii.so            // /
+│   │
+│   ├── recordingmonitor       // MAIN BINARY (recordingmonitor again)
+│   ├── unav                   // UI and other app dependencies
+│
+├── log                        // log files
+│   └── recordingmonitor.log
+│
+├── recordingmonitor.sqlite    // DB
+├── recordingmonitor.yml       // config file
+│
+├── software                   // \
+│   ├── ccextractor            //  * - external utilities
+│   ├── multicat               // /
+│
+├── tmp                        // working directory, with capturing results
+│   └── maintenance
+│
+├── scripts                    // \
+│   └── public                 //  \
+│       ├── channels-create.sh //   * - script helpers
+│       └── start.sh           //  /
+│
+└── unav-recordingmonitor-bundle-0.1.3.dev0.tgz // - original package
+```
+
+--------------------------------------------------------------------------------
+
 
 ### Using PIP and package
 
@@ -24,7 +70,7 @@ Script will automatically create its DB (internal storage) --
 
 **OBSOLETE**
 
-First you need to get an image (it is private). You could download it (not
+First, you need to get an image (it is private). You could download it (not
 implemented yet) or **build** (see _development section_ of this guide)
 
 Having image locally you can run a container:
@@ -34,14 +80,14 @@ docker run --rm --name mon unav/recordingmonitor`
 ```
 
 Some settings can be set through environment variables. But it is possible to
-mount configuration file from host-machine.
+mount configuration file from host machine.
 
 ## Setup
 
 ### Time zone
 
 Time zone could be set in the configuration property `scheduler.tz` with
-fallback to `'utc'` time zone.
+fallback to `'UTC'` time zone.
 
 Applicable values are described in the documentation for PyTZ module:
 
@@ -116,7 +162,7 @@ The result -- `unav-recordingmonitor-X.Y.Z.tar.gz` file in the `/dist` folder.
 
 ### Build new PyInstaller bundle with Docker image
 
-To create a new version of a prebuilt bundle you will need a _Docker image for
+To create a new version of a pre-built bundle you will need a _Docker image for
 building_. For the first time you could create it (locally) with this command:
 
 ```
@@ -125,7 +171,7 @@ docker build -f Dockerfile --tag unav-recordingmonitor-packer .
 cd ../..
 ```
 
-Now you can use this image to create bundle. It is easier than it sounds. Just
+Now you can use this image to create the bundle. It is easier than it sounds. Just
 run the command (**from the root folder of the repository**):
 
 ```
@@ -133,15 +179,15 @@ docker run -u `id -u` --rm -v `pwd`:/pack unav-recordingmonitor-packer
 ```
 
 This will run temporary container (`--rm` option). This container will run the
-bundling-commands inside. As a result you will get a new shiny package
+bundling-commands inside. As a result, you will get a new shiny package
 `./dist/unav-recordingmonitor-bundle-X.Y.Z.tgz`
 
 PS: we use docker image because it has the appropriate environment, the most
-importatant thing - **old glibc**, installed on unav server.
+important thing - **old glibc**, installed on the `unav` server.
 
 Several observations about bundle version:
 
-* during build process the appscheduler lib will be patched (see section below)
+* during build process the `appscheduler` lib will be patched (see section below)
 * bundle is a result of running `PyInstaller` (see section below)
 
 #### fix apschedule
@@ -159,7 +205,7 @@ version = __version__ = '.'.join(str(x) for x in version_info[:3])
 
 Original solution: https://github.com/agronholm/apscheduler/issues/158#issuecomment-299444402
 
-#### 7 run pyinstall
+#### run pyinstall
 
 ```bash
 pyinstaller -y --log-level=WARN pyinstaller/recordingmonitor.spec

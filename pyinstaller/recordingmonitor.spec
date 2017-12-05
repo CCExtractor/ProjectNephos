@@ -6,6 +6,7 @@ block_cipher = None
 data_files = [
 	('../client/dist', 'unav/recordingmonitor/web/ui/dist'),
 	('../unav/recordingmonitor/notifications/formatter/templates', 'unav/recordingmonitor/notifications/formatter/templates'),
+	('../scripts/public', 'scripts/public'),
 ]
 
 a = Analysis(

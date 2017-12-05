@@ -7,8 +7,20 @@ This is the history of changes of the `unav-recordingmonitor` package
 
 ## unpublished // ??
 
-* improved _channel on air_ check
-* new type of commands: `GetVideoInfoCommand`
+## 0.1.3 // 2017-12-05
+
+* check channels (on air)
+* capture stream data for channels
+* repeatable capturing (cron-like and by-interval)
+* check for free space
+* store info in sqlite (configurable)
+* notification - email, fully configurable
+
+* `startup` scripts
+* update README file
+
+* bundler upon pyinstaller
+* docker builder (for old version of glib)
 
 ## 0.0.3 // 2017-11-??
 

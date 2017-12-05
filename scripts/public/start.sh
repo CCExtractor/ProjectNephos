@@ -7,17 +7,13 @@
 # Intended to use with cron
 #
 
-#APP_ROOT=/home/user/recordingmonitor
-APP_ROOT=/home/aman/tmp/rmon
+APP_ROOT=/home/redhen/recordingmonitor
 APP_EXE=$APP_ROOT/recordingmonitor/recordingmonitor
 APP_ENV_PATH=$APP_ROOT/software:$PATH
-#APP_ENV_PATH=/home/aman/projects/000-money/xirvik/recording-monitor-git/software:$PATH
-
-RECORDINGMONITOR_web_host=0.0.0.0
-RECORDINGMONITOR_web_port=5000
+# APP_ENV_PATH=/home/aman/projects/000-money/xirvik/recording-monitor-git/software:$PATH
 
 # local variables
-_monitor_api_root="http://$RECORDINGMONITOR_web_host:$RECORDINGMONITOR_web_port"
+_monitor_api_root="http://0.0.0.0:5000"
 _monitor_api_ping="$_monitor_api_root/api/v0/about/ping"
 
 function ping_monitor
@@ -42,9 +38,6 @@ function ping_monitor
 
 function start_recordingmonitor
 {
-	export RECORDINGMONITOR_web_host=$RECORDINGMONITOR_web_host
-	export RECORDINGMONITOR_web_port=$RECORDINGMONITOR_web_port
-
 	export PATH=$APP_ENV_PATH
 
 	cd $APP_ROOT

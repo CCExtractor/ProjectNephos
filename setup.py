@@ -4,9 +4,9 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = (0, 1, 2)
-VERSION_SUFFIX = 'dev.5'
-VERSION_SUFFIX = ''
+VERSION = (0, 1, 3)
+VERSION_SUFFIX = 'dev.0'
+#VERSION_SUFFIX = ''
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX

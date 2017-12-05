@@ -26,4 +26,4 @@ RUN \
 	true
 
 
-ENTRYPOINT scripts/pack-in-env.sh --env centos6
+ENTRYPOINT scripts/dev/pack-in-env.sh --env centos6
