@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 VERSION = (0, 1, 3)
 VERSION_SUFFIX = 'dev.0'
-#VERSION_SUFFIX = ''
+VERSION_SUFFIX = ''
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX
@@ -26,7 +26,7 @@ cwd = os.path.dirname(__file__)
 
 def read_all(file_name):
 	fullname = os.path.join(cwd, file_name)
-	with open(fullname) as f:
+	with open(fullname, encoding='utf-8') as f:
 		return f.read()
 
 
