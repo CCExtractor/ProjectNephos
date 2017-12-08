@@ -14,6 +14,7 @@ from .channels import ChannelsResource
 from .channels import ChannelsListResource
 from .channels import ChannelsStatusResource
 from .about import PingResource
+from .about import GetPidResource
 
 log = getLogger(__name__)
 
@@ -56,3 +57,4 @@ api.add_resource(ChannelsListResource,   '/channels')
 api.add_resource(ChannelsResource,       '/channels/<string:ID>')
 api.add_resource(ChannelsStatusResource, '/channels/<string:ID>/status')
 api.add_resource(PingResource,           '/about/ping')
+api.add_resource(GetPidResource,         '/about/pid')

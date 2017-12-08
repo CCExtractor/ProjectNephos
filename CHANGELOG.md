@@ -7,6 +7,8 @@ This is the history of changes of the `unav-recordingmonitor` package
 
 ## unpublished // ??
 
+* API: new route /api/v0/about/pid
+
 ## 0.1.3 // 2017-12-05
 
 * check channels (on air)
