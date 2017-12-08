@@ -231,9 +231,9 @@ notifications:
       password: null
 
     subject: 'Recording Monitor'
-    from: recordingmonitor@unav.es
+    from: recordingmonitor@localhost.local
     to:
-      - support@xirvik.com
+      - example@localhost.local
 
 jobs:
   templates:
@@ -242,7 +242,7 @@ jobs:
       type: scripttpl
 
       after:
-        - echo "{message}"
+        - cmd: echo "{message}"
         - cmd: date +%s
           out: PIPE
 
