@@ -5,7 +5,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 VERSION = (0, 1, 4)
-VERSION_SUFFIX = 'dev.1'
+VERSION_SUFFIX = 'dev.2'
 VERSION_SUFFIX = ''
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
@@ -100,7 +100,7 @@ setup(
 	license=__license__,
 	# copyright=__copyright__,
 	author=__author__,
-	author_email='support@xirvik.com',
+	author_email='carlos@ccextractor.org',
 	description=__description__,
 	long_description=read_all('README.md'),
 	keywords='network',
@@ -134,7 +134,6 @@ setup(
 	test_suite='pytest',
 
 	install_requires=[
-		'python-daemon-3K >= 1.5.8,    < 1.5.99',
 		'PyYAML           == 3.12',
 		'python-dotenv    == 0.7.1',
 		'coloredlogs      == 7.3',
@@ -154,16 +153,11 @@ setup(
 		#'flask-restplus   >= 0.10.1,   < 0.10.99',
 		'flask-socketio   >= 2.7.0',
 
+		'python-slugify   >= 1.2.4,    < 1.2.99',
 
 		# 'simplejson       == 3.11.1',
-		# 'pony             == 0.7.2',
-		# 'jmespath         == 0.9.3',
-		# 'six              == 1.11.0',
-		# 'future',
 
 		# 'httplib2         ==0.9.1',
-		# 'pyee             ==1.0.2',
-
 		# 'requests        ==2.18.4',
 		# 'enum34          ==1.1.6',
 	],

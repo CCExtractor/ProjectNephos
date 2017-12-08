@@ -275,3 +275,11 @@ curl -X POST \
         }
     }'
 ```
+
+## AUTHORS
+
+* Maksim Koryukov
+
+## LICENSE
+
+Private project

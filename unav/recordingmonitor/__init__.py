@@ -4,8 +4,6 @@ import argparse
 import dotenv
 import atexit
 
-import daemon
-
 from .version import __version__
 from .version import __description__
 from .version import __title__
@@ -78,7 +76,11 @@ def main():
 	atexit.register(_cleanup)
 
 	if False and args.daemonize:
-		ctx = daemon.DaemonContext()
+		# ctx = daemon.DaemonContext()
+		print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+		print('Daemonize currently not supported')
+		print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+		ctx = nullcontext()
 	else:
 		ctx = nullcontext()
 
