@@ -142,7 +142,7 @@ setup(
 
 		'raven[flask]     >=6.3.0',
 		'blinker          >= 1.4,      < 1.4.99',
-		'APScheduler      == 3.3.1',
+		'APScheduler      == 3.4.0',
 		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
 		'SQLAlchemy-Utils >= 0.32.21,  < 0.32.99',
 
