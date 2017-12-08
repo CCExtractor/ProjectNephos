@@ -1,0 +1,44 @@
+*/10    *       *       *       *       /home/redhen/software/rhepggrabber 2>&1 >>/dev/null
+# Antena 3
+15      6       *       *       1-5     /home/redhen/software/record_channel -station "Antena 3" -length 9900 -program "Noticias mañana"
+00      9       *       *       1-5     /home/redhen/software/record_channel -station "Antena 3" -length 12600 -program "Espejo público"
+00      15      *       *       *       /home/redhen/software/record_channel -station "Antena 3" -length 5400 -program "Noticias Deportes El tiempo"
+00      21      *       *       1-5     /home/redhen/software/record_channel -station "Antena 3" -length 2700 -program "Noticias Deportes El tiempo"
+00      21      *       *       6-7     /home/redhen/software/record_channel -station "Antena 3" -length 4200 -program "Noticias Deportes El tiempo"
+45      21      *       *       1-4     /home/redhen/software/record_channel -station "Antena 3" -length 3300 -program "El hormiguero"
+# Cuatro
+30      11      *       *       1-5     /home/redhen/software/record_channel -station "Cuatro" -length 9900 -program "Las mañanas de Cuatro"
+00      12      *       *       6-7     /home/redhen/software/record_channel -station "Cuatro" -length 7200 -program "Callejeros viajeros"
+15      14      *       *       1-5     /home/redhen/software/record_channel -station "Cuatro" -length 6300 -program "Noticias Cuatro Mediodia El tiempo Deportes"
+00      14      *       *       6-7     /home/redhen/software/record_channel -station "Cuatro" -length 6300 -program "Noticias Cuatro Mediodia El tiempo Deportes"
+05      20      *       *       1-5     /home/redhen/software/record_channel -station "Cuatro" -length 5100 -program "Noticias Cuatro Noche El tiempo Deportes"
+00      20      *       *       6-7     /home/redhen/software/record_channel -station "Cuatro" -length 5400 -program "Noticias Cuatro Noche El tiempo Deportes"
+30      22      *       *       1       /home/redhen/software/record_channel -station "Cuatro" -length 5100 -program "Cintora a pie de calle"
+30      21      *       *       5       /home/redhen/software/record_channel -station "Cuatro" -length 5400 -program "Cintora a pie de calle"
+55      23      *       *       1       /home/redhen/software/record_channel -station "Cuatro" -length 9300 -program "Soy noticia"
+00      23      *       *       5       /home/redhen/software/record_channel -station "Cuatro" -length 13800 -program "21 dias"
+# Tele 5
+30      6       *       *       1-5     /home/redhen/software/record_channel -station "Tele 5" -length 5100 -program "Informativos"
+00      12      *       *       6       /home/redhen/software/record_channel -station "Tele 5" -length 9000 -program "Cazamariposas VIP"
+55      8       *       *       1-5     /home/redhen/software/record_channel -station "Tele 5" -length 10200 -program "El programa de Ana Rosa"
+59      14      *       *       *       /home/redhen/software/record_channel -station "Tele 5" -length 3600 -program "Informativos Mediodia Deportes El tiempo"
+00      16      *       *       1-5     /home/redhen/software/record_channel -station "Tele 5" -length 3600 -program "Sálvame Limón"
+59      16      *       *       1-5     /home/redhen/software/record_channel -station "Tele 5" -length 11400 -program "Sálvame Naranja"
+05      21      *       *       1-6     /home/redhen/software/record_channel -station "Tele 5" -length 3300 -program "Informativos Deportes El tiempo"
+50      20      *       *       7       /home/redhen/software/record_channel -station "Tele 5" -length 2400 -program "Informativos Noche"
+00      22      *       *       5       /home/redhen/software/record_channel -station "Tele 5" -length 15300 -program "Sálvame Naranja"
+# La sexta
+20      12      *       *       1-5     /home/redhen/software/record_channel -station "La Sexta" -length 6000 -program "Al rojo vivo"
+00      14      *       *       *       /home/redhen/software/record_channel -station "La Sexta" -length 6300 -program "Noticias Mediodia Jugones El tiempo"
+15      17      *       *       1-5     /home/redhen/software/record_channel -station "La Sexta" -length 9900 -program "Más vale tarde"
+00      20      *       *       1,3-7   /home/redhen/software/record_channel -station "La Sexta" -length 5400 -program "Noticias Noche El tiempo Deporte"
+00      21      *       *       2       /home/redhen/software/record_channel -station "La Sexta" -length 1800 -program "The Very Best of El Intermedio"
+00      20      *       *       2       /home/redhen/software/record_channel -station "La Sexta" -length 2600 -program "Noticias Noche El tiempo Deporte"
+30      21      *       *       1-4     /home/redhen/software/record_channel -station "La Sexta" -length 6000 -program "El Intermedio"
+30      21      *       *       5       /home/redhen/software/record_channel -station "La Sexta" -length 3600 -program "La Sexta Columna"
+30      21      *       *       6       /home/redhen/software/record_channel -station "La Sexta" -length 14400 -program "La Sexta Noche"
+30      21      *       *       7       /home/redhen/software/record_channel -station "La Sexta" -length 3600 -program "Salvados"
+30      22      *       *       7       /home/redhen/software/record_channel -station "La Sexta" -length 4500 -program "El objetivo"
+# Subidas, esto habrá que ajustarlo para que sea sólo nocturno
+40      */2     *       *       *       /home/redhen/software/upload_ucla
+# xx
