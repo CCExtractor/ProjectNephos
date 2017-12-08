@@ -11,45 +11,52 @@ This guide for the **redhen** server (depends on paths and environment).
 1. Download the latest `unav-recordingmonitor-bundle-x.x.x.tgz` from
     [GitHub Releases](https://github.com/XirvikMadrid/RecordingMonitor/releases)
 2. Extract to the `/home/redhen/recordingmonitor`
-3. Add the following line to crontab ([why exec](http://www.somacon.com/p38.php)):
+3. Add the following line to crontab ([why use exec](http://www.somacon.com/p38.php)):
     `*/15 * * * * root exec /bin/bash /home/redhen/recordingmonitor/scripts/public/start.sh`
-4. cron will start (and check the app is running) every 15 minutes. Even
-    [without a reboot](https://stackoverflow.com/a/10193931/1115187)
+4. DONE!
+
+`cron` will ensure that app is running (and start it when necessary) every
+15 minutes. `cron` restart is not required.
+
 
 It it a rough file-tree structure (correct for version 0.1.3):
 
 ```
-/home/redhen/recordingmonitor
+/home/redhen/
 ├── recordingmonitor           // yes, it's recordingmonitor in recordingmonitor
+│   ├── recordingmonitor
 │   │
-│   ├── array.so               // \
-│   ├── base_library.zip       //  \
-│   ├── xxxxxxxx.so            //   * - 3d-party libraries
-│   ├── ...........            //  /
-│   ├── binascii.so            // /
+│   │   ├── array.so                   // \
+│   │   ├── base_library.zip           //  \
+│   │   ├── xxxxxxxx.so                //   * - 3d-party libraries
+│   │   ├── ...........                //  /
+│   │   ├── binascii.so                // /
+│   │   │
+│   │   ├── recordingmonitor           // MAIN BINARY (recordingmonitor again)
+│   │   ├── unav                       // UI and other app dependencies
+│   │   │
+│   │   └── scripts                    // \
+│   │       └── public                 //  \
+│   │           ├── channels-create.sh //   * - script helpers
+│   │           └── start.sh           //  /
 │   │
-│   ├── recordingmonitor       // MAIN BINARY (recordingmonitor again)
-│   ├── unav                   // UI and other app dependencies
+│   ├── log                            // log files
+│   │   └── recordingmonitor.log
+│   │
+│   ├── recordingmonitor.sqlite        // DB
+│   ├── recordingmonitor.yml           // config file
+│   │
+│   └── tmp                        // working directory, with capturing results
+│       └── maintenance
 │
-├── log                        // log files
-│   └── recordingmonitor.log
 │
-├── recordingmonitor.sqlite    // DB
-├── recordingmonitor.yml       // config file
+├── unav-recordingmonitor-bundle-0.1.3.dev0.tgz // - original package
 │
-├── software                   // \
-│   ├── ccextractor            //  * - external utilities
-│   ├── multicat               // /
-│
-├── tmp                        // working directory, with capturing results
-│   └── maintenance
-│
-├── scripts                    // \
-│   └── public                 //  \
-│       ├── channels-create.sh //   * - script helpers
-│       └── start.sh           //  /
-│
-└── unav-recordingmonitor-bundle-0.1.3.dev0.tgz // - original package
+└── software                   // \
+    ├── ccextractor            //  * - external utilities
+    ├── multicat               // /
+    └── ...
+
 ```
 
 --------------------------------------------------------------------------------

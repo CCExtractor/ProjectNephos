@@ -9,12 +9,16 @@
 
 APP_ROOT=/home/redhen/recordingmonitor
 APP_EXE=$APP_ROOT/recordingmonitor/recordingmonitor
-APP_ENV_PATH=$APP_ROOT/software:$PATH
-# APP_ENV_PATH=/home/aman/projects/000-money/xirvik/recording-monitor-git/software:$PATH
+APP_ENV_PATH=/home/redhen/software:$PATH
 
-# local variables
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# IMPORTANT LOCAL VARIABLES
 _monitor_api_root="http://0.0.0.0:5000"
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# other local variables
 _monitor_api_ping="$_monitor_api_root/api/v0/about/ping"
+
 
 function ping_monitor
 {
