@@ -36,7 +36,7 @@ class BaseJobResultProcessor:
 		:param data: Job result
 		:type data: *
 		'''
-		log.error(
+		log.info(
 			(
 				'JobResultProcessor called for unknown '
 				'job kind [%s] with data [%s]'
