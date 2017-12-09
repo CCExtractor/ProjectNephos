@@ -8,6 +8,12 @@ This is the history of changes of the `unav-recordingmonitor` package
 ## unpublished // ??
 
 * API: new route /api/v0/about/pid
+* job templates: templating for output way
+* config: new capturing template for "CAPTURE" jobs
+* config: list all templating variables, and add several new variables
+* notification: channel-on-air will notify only if channels' states changed
+
+* deps: update apscheduler (3.4.0)
 
 ## 0.1.3 // 2017-12-05
 

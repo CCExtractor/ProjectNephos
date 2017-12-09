@@ -287,16 +287,17 @@ class ChannelOnAirJobResultProcessor(BaseJobResultProcessor):
 				},
 			)
 		elif down_counter > 0:
-			self.notify_signal.send(
-				self.KIND,
-				notification_code='channels_statuses_existing_down',
-				data={
-					'ts': ts,
-					'channels_went_down': channels_went_down,
-					'channels_stay_down': channels_stay_down,
-					'channels_went_up': channels_went_up,
-				},
-			)
+			# self.notify_signal.send(
+			# 	self.KIND,
+			# 	notification_code='channels_statuses_existing_down',
+			# 	data={
+			# 		'ts': ts,
+			# 		'channels_went_down': channels_went_down,
+			# 		'channels_stay_down': channels_stay_down,
+			# 		'channels_went_up': channels_went_up,
+			# 	},
+			# )
+			log.info('ChannelOnAirJobResultProcessor: there still are channels in down state')
 		else:
 			log.debug('ChannelOnAirJobResultProcessor: no changes in channels statuses')
 

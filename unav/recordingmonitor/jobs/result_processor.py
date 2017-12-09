@@ -38,7 +38,7 @@ class BaseJobResultProcessor:
 		'''
 		log.info(
 			(
-				'JobResultProcessor called for unknown '
+				'Default JobResultProcessor is used for '
 				'job kind [%s] with data [%s]'
 			),
 			self.KIND,
