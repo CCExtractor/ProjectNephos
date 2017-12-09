@@ -252,25 +252,40 @@ jobs:
       parameters:
         channel_ID:
           type: TypeChannelSelect
-        ftp_host:
-          type: str
-          default: ftp.com
-        ftp_user:
-          type: str
-          default: user
-        ftp_password:
-          type: str
-          default: password
 
       main:
-        out: stream.ts
+        out: {job_name_slug}.mpg
 
       after:
-        # - echo "{message}"
-        # - cmd: cp stream2.ts /tmp/mon/{job_ID}.ts
+
+        # ----------------------------------------------------------------------
+        # JOB COMMANDS
+        # ----------------------------------------------------------------------
+        - cmd: /home/redhen/ucla-scripts/check-cc-single.sh {job_name_slug}.mpg -dur 1
+          note: unknown
+
+        - cmd: ssh ca mkdir -p ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
+          note: create remote dir
+
+        - cmd: rsync -v --progress ${job_name_slug}.mpg ${job_name_slug}.txt ${job_name_slug}.len ca:ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
+          note: sync remote dir
+
+        # ----------------------------------------------------------------------
+        # / JOB COMMANDS
+        # ----------------------------------------------------------------------
+
+        # - cmd: cp {job_name_slug}.mpg /tmp/{job_name_slug}.mpg
+        # - cmd: echo '{job_ID}'
+        # - cmd: echo '{job_name}'
+        # - cmd: echo '{job_name_slug}'
+        # - cmd: echo '{job_dir}'
+        # - cmd: echo '{job_main_duration_sec}'
+        # - cmd: echo '{job_launch_date_from:%Y-%m-%d %H:%M}'
+        # - cmd: echo '{job_launch_date_trim:%Y_%m_%dTTT%H_%M_%S}'
+        # - cmd: echo '{channel_ID}'
 
         # send with FTP:
-        - cmd: curl --silent --fail --show-error -T stream.ts ftp://{ftp_host} --user {ftp_user}:{ftp_password}
+        # - cmd: curl --silent --fail --show-error -T {job_name_slug}.ts ftp://{ftp_host} --user {ftp_user}:{ftp_password}
 
 db:
   connection:
