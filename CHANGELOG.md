@@ -12,6 +12,8 @@ This is the history of changes of the `unav-recordingmonitor` package
 * config: new capturing template for "CAPTURE" jobs
 * config: list all templating variables, and add several new variables
 * notification: channel-on-air will notify only if channels' states changed
+* api: add job using channel NAME (not only ID is consumable now)
+* DB: stricter structure - add FK for log-records
 
 * deps: update apscheduler (3.4.0)
 

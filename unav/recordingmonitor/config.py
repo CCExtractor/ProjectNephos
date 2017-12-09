@@ -217,7 +217,7 @@ FLASK:
 
 scheduler:
   tz: utc
-  jobsLimit: 20
+  jobsLimit: 40
 
 notifications:
   emails:
@@ -254,7 +254,7 @@ jobs:
           type: TypeChannelSelect
 
       main:
-        out: {job_name_slug}.mpg
+        out: '{job_name_slug}.mpg'
 
       after:
 

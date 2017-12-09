@@ -10,6 +10,7 @@ from flask_restful import reqparse
 from flask_restful import fields
 
 from ...models.jobs import JobInfo
+from ...models.tv import Channel
 
 from ._utils import marshal_nullable_with
 from ._utils import to_arrow_datetime
@@ -65,6 +66,7 @@ _parser.add_argument('duration_sec', type=int)
 _parser.add_argument('template_name')
 _parser.add_argument('job_params', type=to_dict)
 _parser.add_argument('channel_ID')
+_parser.add_argument('channel_name')
 _parser.add_argument('repeat', type=to_dict)
 
 
@@ -113,6 +115,17 @@ class JobsListResource(_WithSchedulerAndDb, Resource):
 		args = _parser.parse_args()
 
 		log.debug('job create, args: %s', args)
+
+		channel_name = args.pop('channel_name', None)
+		channel_ID = args.get('channel_ID', None)
+		if channel_ID is None:
+			channel = Channel.query.filter_by(name=channel_name).first()
+			if channel:
+				channel_ID = channel.ID
+				args['channel_ID'] = channel.ID
+				log.debug('channel [%s] found by name [%s]', channel_ID, channel_name)
+			else:
+				log.warn('channel not found by name [%s]', channel_name)
 
 		ji = JobInfo(**args)
 

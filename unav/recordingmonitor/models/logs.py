@@ -6,6 +6,7 @@
 import arrow
 import sqlalchemy as sa
 from sqlalchemy.sql import func
+from sqlalchemy import ForeignKey
 
 #from ..db import DB
 from .base import Model
@@ -27,8 +28,8 @@ class TaskLogRecord(MixinIdGuid, Model):
 	trace = sa.Column(sa.String)
 	message = sa.Column(sa.String)
 
-	job_info_ID = sa.Column(TypeUuid)
-	job_launch_ID = sa.Column(TypeUuid)
+	job_info_ID = sa.Column(TypeUuid, ForeignKey('job_info.ID'))
+	job_launch_ID = sa.Column(TypeUuid, ForeignKey('job_info.ID'))
 	job_template_name = sa.Column(sa.String)
 	data = sa.Column(TypeJson)
 

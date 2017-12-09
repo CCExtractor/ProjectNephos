@@ -11,6 +11,15 @@ log = getLogger(__name__)
 class BaseJobResultProcessor:
 
 	# TODO: use package name
+	# @property
+	# def classname(self):
+	# 	return type(self).__name__
+
+	# @property
+	# def full_classname(self):
+	# 	t = type(self)
+	# 	return t.__module__ + '.' + t.__name__
+
 	KIND = 'unav.recordingmonitor.jobs.common'
 
 	notify_signal = blinker.signal('notifications')
