@@ -23,24 +23,24 @@ log = logging.getLogger(__name__)
 
 # output
 _repeat_cron_fields = {
-	'year':        fields.String,
-	'month':       fields.String,
-	'day':         fields.String,
-	'week':        fields.String,
-	'day_of_week': fields.String,
-	'hour':        fields.String,
-	'minute':      fields.String,
-	'second':      fields.String,
-	'date_trim':   DateTimeWithUtc,
+	'year':         fields.String,
+	'month':        fields.String,
+	'day':          fields.String,
+	'week':         fields.String,
+	'day_of_week':  fields.String,
+	'hour':         fields.String,
+	'minute':       fields.String,
+	'second':       fields.String,
+	'date_trim':    DateTimeWithUtc,
 }
 
 _repeat_interval_fields = {
-	'weeks':       fields.String,
-	'days':        fields.String,
-	'hours':       fields.String,
-	'minutes':     fields.String,
-	'seconds':     fields.String,
-	'date_trim':   DateTimeWithUtc,
+	'weeks':        fields.String,
+	'days':         fields.String,
+	'hours':        fields.String,
+	'minutes':      fields.String,
+	'seconds':      fields.String,
+	'date_trim':    DateTimeWithUtc,
 }
 
 _repeat_fields = {
@@ -49,13 +49,14 @@ _repeat_fields = {
 }
 
 _job_fields = {
-	'ID': fields.String,
-	'channel_ID': fields.String,
-	'name': fields.String,
-	'date_from': DateTimeWithUtc,
+	'ID':           fields.String,
+	'channel_ID':   fields.String,
+	'name':         fields.String,
+	'date_from':    DateTimeWithUtc,
 	'duration_sec': fields.Integer,
-	'is_removed': fields.Boolean,
-	'repeat': fields.Nested(_repeat_fields, allow_null=True)
+	'timezone':     fields.String,
+	'is_removed':   fields.Boolean,
+	'repeat':       fields.Nested(_repeat_fields, allow_null=True)
 }
 
 # input

@@ -14,6 +14,7 @@ This is the history of changes of the `unav-recordingmonitor` package
 * notification: channel-on-air will notify only if channels' states changed
 * api: add job using channel NAME (not only ID is consumable now)
 * DB: stricter structure - add FK for log-records
+* scheduler: explicit timezones for jobs
 
 * deps: update apscheduler (3.4.0)
 

@@ -21,6 +21,8 @@ class JobInfo(MixinIdGuid, Model):
 	name = sa.Column(sa.String(1200))
 	date_from = sa.Column(TypeArrowDate)
 	duration_sec = sa.Column(sa.Integer)
+	timezone = sa.Column(sa.String(128), default=None)
+
 	template_name = sa.Column(sa.String(4800))
 	job_params = sa.Column(TypeJson)
 	job_ID = sa.Column(sa.String(96))

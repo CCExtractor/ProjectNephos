@@ -209,6 +209,7 @@ class ScheduledWorker:
 		template_name = ji.template_name
 		date_from = ji.date_from
 		duration_sec = ji.duration_sec
+		job_timezone = ji.timezone
 		channel_ID = ji.channel_ID
 		job_params = ji.job_params
 		repeat = ji.repeat
@@ -234,7 +235,7 @@ class ScheduledWorker:
 
 		fn_name = 'unav.recordingmonitor.jobs.templates.{}:start'.format(job_type)
 
-		trig = _create_trigger_from_repeat(date_from, repeat, self._tz)
+		trig = _create_trigger_from_repeat(date_from, job_timezone, repeat)
 		log.debug('trigger for job [%s]', trig)
 
 		missfire_sec = duration_sec
@@ -304,7 +305,7 @@ class ScheduledWorker:
 		self._scheduler.remove_job(ID)
 
 
-def _create_trigger_from_repeat(date_from, repeat, tz):
+def _create_trigger_from_repeat(date_from, timezone, repeat):
 
 	def _pop_date_trim(obj):
 		_str = obj.pop('date_trim', None)
@@ -314,9 +315,6 @@ def _create_trigger_from_repeat(date_from, repeat, tz):
 		return arrow.get(_str).datetime
 
 	_dt = date_from.datetime
-	# TODO: try to create PYTZ timezone from DT...
-	#_tz = arrow2pytz(date_from.tzinfo) # or tz
-	_tz = tz
 
 	_cron = pydash.get(repeat, 'cron')
 	_interval = pydash.get(repeat, 'interval')
@@ -324,18 +322,21 @@ def _create_trigger_from_repeat(date_from, repeat, tz):
 	if _cron:
 		_cron['start_date'] = _dt
 		_cron['end_date'] = _pop_date_trim(_cron)
-		_cron['timezone'] = _tz
+		if timezone:
+			_cron['timezone'] = timezone
 		trig = CronTrigger(**_cron)
 	elif _interval:
 		_interval['start_date'] = _dt
 		_interval['end_date'] = _pop_date_trim(_interval)
-		_interval['timezone'] = _tz
+		if timezone:
+			_interval['timezone'] = timezone
 		trig = IntervalTrigger(**_interval)
 	else:
-		trig = DateTrigger(
-			run_date=_dt,
-			timezone=_tz
-		)
+		_bydate = {}
+		_bydate['run_date'] = _dt
+		if timezone:
+			_bydate['timezone'] = timezone
+		trig = DateTrigger(**_bydate)
 
 	return trig
 
