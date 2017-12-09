@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import arrow
+# import arrow
 import sqlalchemy as sa
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
@@ -33,15 +33,15 @@ class JobInfo(MixinIdGuid, Model):
 	job_launch_list = relationship('JobLaunch', back_populates='job_info')
 
 	DURATION_SEC_MIN = 5
-	DURATION_SEC_MAX = 8 * 60 * 60
+	DURATION_SEC_MAX = 10 * 60 * 60
 
 	# def __init__(self):
 	# 	super().__init__()
 
 	def validate(self):
-		now = arrow.get()
-		if self.date_from < now:
-			raise ValidationError('Cannot add a Job in the past')
+		# now = arrow.get()
+		# if self.date_from < now:
+		# 	raise ValidationError('Cannot add a Job in the past')
 
 		if self.duration_sec < self.DURATION_SEC_MIN:
 			raise ValidationError('Job is too short: {}sec < {}sec'.format(
