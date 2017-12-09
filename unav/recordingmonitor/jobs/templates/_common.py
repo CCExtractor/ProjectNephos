@@ -79,6 +79,18 @@ class BaseJob:
 		self.__connection_string = job_params.pop('connection_string')
 		self.__cleanup_dir = job_params.pop('job_rmdir', True)
 
+		# ----------------------------------------------------------------------
+		# HEAVY, calculated job params
+		# ----------------------------------------------------------------------
+		# get the name for job's folder
+		self.cwd = self._gen_job_launch_dir_name()
+
+		# add job info to params
+		self.job_params['job_name_slug'] = slugify(self.job_name)
+		self.job_params['job_launch_date_from'] = self.date_from.datetime
+		self.job_params['job_launch_date_trim'] = self.date_trim.datetime
+		self.job_params['job_dir'] = self.cwd
+
 		log.debug('Job [%s] init done', self.job_ID)
 
 	def _gen_job_launch_dir_name(self):
@@ -105,18 +117,9 @@ class BaseJob:
 		self.log = get_adapted_logger(self, self.session)
 
 		# 3 create temporary dir
-		self.cwd = self._gen_job_launch_dir_name()
 
 		log.debug('Create dir for job [%s] [%s]', self.job_ID, self.cwd)
 		os.makedirs(self.cwd, exist_ok=True)
-
-		# ----------------------------------------------------------------------
-		# 4 add job info to params
-		# ----------------------------------------------------------------------
-		self.job_params['job_name_slug'] = slugify(self.job_name)
-		self.job_params['job_launch_date_from'] = self.date_from.datetime
-		self.job_params['job_launch_date_trim'] = self.date_trim.datetime
-		self.job_params['job_dir'] = self.cwd
 
 		return self
 
@@ -146,6 +149,9 @@ class BaseJob:
 				}
 			)
 
+	def config(self):
+		pass
+
 	def run(self):
 		pass
 
@@ -162,7 +168,7 @@ class StarterFabric:
 		rc = None
 
 		with self._job_class(template_config, job_params) as job:
-			job.config(template_config, job_params)
+			job.config()
 			log.debug('Job [%s] starting [%s]', job.job_ID, type(job))
 			rc = job.run()
 			log.debug('Job [%s] ended [%s]', job.job_ID, type(job))

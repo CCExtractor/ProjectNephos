@@ -8,6 +8,7 @@ from logging import getLogger
 from ._common import StarterFabric
 from .scripttpl import TemplatedScriptJob
 from ..syscommand import CaptureCommand
+from ...utils.string import format_with_emptydefault
 
 from ...models.tv import Channel
 
@@ -18,14 +19,16 @@ log = getLogger(__name__)
 
 class CaptureStreamJob(TemplatedScriptJob):
 
-	def config(self, template_config, job_params):
+	def config(self):
 
-		out = pydash.get(template_config, 'main.out', 'stream.ts')
+		out = pydash.get(self.template_config, 'main.out', 'stream.ts')
+		out = format_with_emptydefault(out, self.job_params)
 
-		channel_ID = job_params['channel_ID']
-		capture_address = job_params.get('capture_address')
+		channel_ID = self.job_params['channel_ID']
+		capture_address = self.job_params.get('capture_address')
 
 		self.channel = self.session.query(Channel).get(channel_ID)
+		# TODO: check that channel is not NONE
 
 		capture_command = CaptureCommand(
 			channel_ip=self.channel.ip_string,
@@ -36,7 +39,7 @@ class CaptureStreamJob(TemplatedScriptJob):
 		)
 		self.commands_list.append(capture_command)
 
-		after_cmd_config_list = template_config.get('after')
+		after_cmd_config_list = self.template_config.get('after')
 		if after_cmd_config_list:
 			for after_cmd_config in after_cmd_config_list:
 				command = self.create_command_from_config(after_cmd_config, self.job_params)

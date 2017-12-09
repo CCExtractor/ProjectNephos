@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 from logging import getLogger
 
 from ._common import StarterFabric
@@ -55,14 +53,14 @@ class TemplatedScriptJob(BaseJob):
 
 		self.commands_list = []
 
-	def config(self, template_config, job_params):
+	def config(self):
 
-		main_cmd_config = template_config.get('main')
+		main_cmd_config = self.template_config.get('main')
 		if main_cmd_config:
 			command = self.create_command_from_config(main_cmd_config, self.job_params, self.duration_sec)
 			self.commands_list.append(command)
 
-		after_cmd_config_list = template_config.get('after')
+		after_cmd_config_list = self.template_config.get('after')
 		if after_cmd_config_list:
 			for after_cmd_config in after_cmd_config_list:
 				command = self.create_command_from_config(after_cmd_config, self.job_params)
