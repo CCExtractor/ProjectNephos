@@ -36,12 +36,12 @@ def error_handler(exc):
 
 	log.warn(exc)
 
-	print('DBG')
-	print('H' * 70)
-	print('H' * 70)
-	print('H' * 70)
-	print('H' * 70)
-	print('H' * 70)
+	# print('DBG')
+	# print('H' * 70)
+	# print('H' * 70)
+	# print('H' * 70)
+	# print('H' * 70)
+	# print('H' * 70)
 
 	data = {'error': str(exc)}
 	raw_res = {'data': data}

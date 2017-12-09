@@ -127,6 +127,11 @@ class ScheduledWorker:
 	def _add_maintenance_jobs(self, app_config):
 
 		jobs = app_config.get('maintenance.jobs')
+
+		if jobs is None:
+			log.warn('All maintenance jobs are disabled, because config is empty!')
+			return
+
 		if not isinstance(jobs, dict):
 			raise ValueError('Config: maintenance.jobs must be a dict')
 
@@ -314,7 +319,7 @@ def _create_trigger_from_repeat(date_from, timezone, repeat):
 
 		return arrow.get(_str).datetime
 
-	_dt = date_from.datetime
+	_dt = date_from.datetime if date_from else None
 
 	_cron = pydash.get(repeat, 'cron')
 	_interval = pydash.get(repeat, 'interval')
