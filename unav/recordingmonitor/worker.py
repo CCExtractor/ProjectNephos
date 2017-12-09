@@ -205,6 +205,7 @@ class ScheduledWorker:
 		ji = job_info_model
 
 		job_info_ID = ji.ID
+		job_name = ji.name
 		template_name = ji.template_name
 		date_from = ji.date_from
 		duration_sec = ji.duration_sec
@@ -243,14 +244,15 @@ class ScheduledWorker:
 
 		# predefined system params:
 		eff_job_params.update({
-			'job_ID': job_info_ID,
-			'job_main_duration_sec': duration_sec,
 			'job_root_dir': self.jobs_root,
 			'job_rmdir': self.__app_config.get('capture.rmdir', True),
+			'connection_string': self.__app_config.connection_string,
+
+			'job_ID': job_info_ID,
+			'job_name': job_name,
+			'job_main_duration_sec': duration_sec,
 
 			'channel_ID': channel_ID,
-
-			'connection_string': self.__app_config.connection_string,
 
 			# TODO: remove, bcz it is necessary only for "capturing" job:
 			'capture_address': self.__app_config.get('capture.address'),

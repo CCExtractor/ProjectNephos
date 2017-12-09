@@ -16,6 +16,20 @@ log = getLogger(__name__)
 
 
 class TemplatedScriptJob(BaseJob):
+	'''
+	Job type, which allows to run an array/list of commands. Commands can
+	contain formatting primitives
+
+	* job_ID
+	* job_name
+	* job_name_slug
+	* job_main_duration_sec
+	* channel_ID
+	* job_launch_date_from
+	* job_launch_date_trim
+	* job_dir
+
+	'''
 
 	def create_command_from_config(self, command_config, job_params, timeout_sec=None):
 

@@ -5,6 +5,7 @@ import shutil
 import logging
 
 import arrow
+from slugify import slugify
 
 from ...db import get_session
 from ...models.jobs import JobLaunch
@@ -65,6 +66,7 @@ class BaseJob:
 		self.cwd = None
 		self.job_launch = None
 		self.job_ID = job_params['job_ID']
+		self.job_name = job_params['job_name']
 
 		self.duration_sec = job_params['job_main_duration_sec']
 		self.date_from = _start_at
@@ -77,7 +79,7 @@ class BaseJob:
 		self.__connection_string = job_params.pop('connection_string')
 		self.__cleanup_dir = job_params.pop('job_rmdir', True)
 
-		log.debug('Job [%s] configured', self.job_ID)
+		log.debug('Job [%s] init done', self.job_ID)
 
 	def _gen_job_launch_dir_name(self):
 		_subfld = self.date_from.format('YYYY-MM-DDTHHmmss.SSS')
@@ -107,6 +109,14 @@ class BaseJob:
 
 		log.debug('Create dir for job [%s] [%s]', self.job_ID, self.cwd)
 		os.makedirs(self.cwd, exist_ok=True)
+
+		# ----------------------------------------------------------------------
+		# 4 add job info to params
+		# ----------------------------------------------------------------------
+		self.job_params['job_name_slug'] = slugify(self.job_name)
+		self.job_params['job_launch_date_from'] = self.date_from.datetime
+		self.job_params['job_launch_date_trim'] = self.date_trim.datetime
+		self.job_params['job_dir'] = self.cwd
 
 		return self
 
