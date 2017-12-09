@@ -19,6 +19,9 @@ def format_with_emptydefault(string, data):
 	:returns: Formatted string
 	:rtype: str
 	'''
+	if string is None:
+		return string
+
 	return string.format_map(_DictFormatEmpty(data))
 
 
