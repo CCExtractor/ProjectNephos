@@ -267,7 +267,7 @@ jobs:
         - cmd: ssh ca mkdir -p ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
           note: create remote dir
 
-        - cmd: rsync -v --progress ${job_name_slug}.mpg ${job_name_slug}.txt ${job_name_slug}.len ca:ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
+        - cmd: rsync -v --progress {job_name_slug}.mpg {job_name_slug}.txt {job_name_slug}.len ca:ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
           note: sync remote dir
 
         # ----------------------------------------------------------------------
