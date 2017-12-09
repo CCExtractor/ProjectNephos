@@ -44,6 +44,7 @@ class TemplatedScriptJob(BaseJob):
 		out = _cmd_params.get('out')
 
 		cmd = format_with_emptydefault(cmd, job_params)
+		out = format_with_emptydefault(out, job_params)
 
 		# cc = Command(main_cmd_params, job_params_dict, logger=self.log, timeout_sec=duration_sec)
 		cc = Command(cmd, cwd=cwd, out=out, timeout_sec=timeout_sec)
