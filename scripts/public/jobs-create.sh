@@ -14,7 +14,8 @@ function cronjob()
 	duration_sec=$6
 
 	# days: mon,tue,wed,thu,fri,sat,sun
-	# 		"timezone": "Europe/Madrid"
+	timezone='Asia/Yekaterinburg'
+	timezone='Europe/Madrid'
 
 	payload='{"channel_name": "'$channel'", "name": "'$program'", "duration_sec": '$duration_sec', "template_name": "capture",
 		"repeat": {
@@ -25,7 +26,7 @@ function cronjob()
 			}
 		},
 		"job_params": {},
-		"timezone": "Asia/Yekaterinburg"
+		"timezone": "'$timezone'"
 	}'
 
 	curl -X POST $API_URL/api/v0/jobs -H 'Content-Type:application/json' -d "$payload"
