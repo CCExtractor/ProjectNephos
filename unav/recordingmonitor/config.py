@@ -261,7 +261,7 @@ jobs:
         # ----------------------------------------------------------------------
         # JOB COMMANDS
         # ----------------------------------------------------------------------
-        - cmd: /home/redhen/ucla-scripts/check-cc-single.sh {job_name_slug}.mpg -dur 1
+        - cmd: /home/redhen/ucla-scripts/check-cc-single.sh {job_dir}/{job_name_slug} -dur 1
           note: unknown
 
         - cmd: ssh ca mkdir -p ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
