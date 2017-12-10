@@ -7,6 +7,8 @@ This is the history of changes of the `unav-recordingmonitor` package
 
 ## unpublished // ??
 
+## 0.2.0 // 2017-12-10
+
 * API: new route /api/v0/about/pid
 * API: add job using channel NAME (not only ID is consumable now)
 * DB: stricter structure - add FK for log-records

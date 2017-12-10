@@ -254,20 +254,20 @@ jobs:
           type: TypeChannelSelect
 
       main:
-        out: '{job_name_slug}.mpg'
+        out: '{job_launch_date_from:%H%M}-{job_name_slug}.mpg'
 
       after:
 
         # ----------------------------------------------------------------------
         # JOB COMMANDS
         # ----------------------------------------------------------------------
-        - cmd: /home/redhen/ucla-scripts/check-cc-single.sh {job_dir}/{job_name_slug} -dur 1
+        - cmd: /home/redhen/ucla-scripts/check-cc-single.sh {job_dir}/{job_launch_date_from:%H%M}-{job_name_slug} -dur 1
           note: unknown
 
         - cmd: ssh ca mkdir -p ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
           note: create remote dir
 
-        - cmd: rsync -v --progress {job_name_slug}.mpg {job_name_slug}.txt {job_name_slug}.len ca:ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
+        - cmd: rsync -v --progress {job_launch_date_from:%H%M}-{job_name_slug}.mpg {job_launch_date_from:%H%M}-{job_name_slug}.txt {job_launch_date_from:%H%M}-{job_name_slug}.len ca:ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
           note: sync remote dir
 
         # ----------------------------------------------------------------------
