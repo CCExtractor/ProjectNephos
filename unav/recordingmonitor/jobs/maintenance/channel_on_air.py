@@ -44,7 +44,7 @@ class ChannelCorruptedError(ChannelBaseError):
 
 class ChannelChecker:
 
-	DEMO_CAPTURING_TIMEOUT_SEC = 6
+	DEMO_CAPTURING_TIMEOUT_SEC = 11
 
 	def __init__(self, app_config, channel_ID):
 
