@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# TODO: consider usage of this project: https://github.com/dgilland/sqlservice
+
 import logging
 
 from flask_sqlalchemy import SQLAlchemy as FlaskSQLAlchemyOriginal
