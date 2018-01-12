@@ -22,39 +22,40 @@ This guide for the **redhen** server (depends on paths and environment).
 It it a rough file-tree structure (correct for version 0.1.3):
 
 ```
+  
 /home/redhen/
-├── recordingmonitor           // yes, it's recordingmonitor in recordingmonitor
-│   ├── recordingmonitor
-│   │
-│   │   ├── array.so                   // \
-│   │   ├── base_library.zip           //  \
-│   │   ├── xxxxxxxx.so                //   * - 3d-party libraries
-│   │   ├── ...........                //  /
-│   │   ├── binascii.so                // /
+├── recordingmonitor
+│   ├── recordingmonitor       // yes, it's recordingmonitor in recordingmonitor
 │   │   │
-│   │   ├── recordingmonitor           // MAIN BINARY (recordingmonitor again)
-│   │   ├── unav                       // UI and other app dependencies
+│   │   ├── array.so                   // \
+│   │   ├── base_library.zip           //  \
+│   │   ├── xxxxxxxx.so                //   * - 3d-party libraries
+│   │   ├── ...........                //  /
+│   │   ├── binascii.so                // /
+│   │   │
+│   │   ├── recordingmonitor           // MAIN BINARY (recordingmonitor again)
+│   │   ├── unav                       // UI and other app dependencies
 │   │   │
 │   │   └── scripts                    // \
-│   │       └── public                 //  \
-│   │           ├── channels-create.sh //   * - script helpers
-│   │           └── start.sh           //  /
+│   │       └── public                 //  \
+│   │           ├── channels-create.sh //   * - script helpers
+│   │           └── start.sh           //  /
 │   │
 │   ├── log                            // log files
-│   │   └── recordingmonitor.log
+│   │   └── recordingmonitor.log
 │   │
 │   ├── recordingmonitor.sqlite        // DB
 │   ├── recordingmonitor.yml           // config file
 │   │
 │   └── tmp                        // working directory, with capturing results
-│       └── maintenance
+│       └── maintenance
 │
 │
 ├── unav-recordingmonitor-bundle-0.1.3.dev0.tgz // - original package
 │
 └── software                   // \
-    ├── ccextractor            //  * - external utilities
-    ├── multicat               // /
+    ├── ccextractor            //  * - external utilities
+    ├── multicat               // /
     └── ...
 
 ```
