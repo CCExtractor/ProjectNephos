@@ -24,7 +24,7 @@ from ...errors import BaseError
 
 from ..syscommand import Command
 from ..syscommand import CaptureCommand
-from ..syscommand import GetVideoInfoCommand
+from ..syscommand import VideoInfoCommand
 
 
 log = logging.getLogger(__name__)
@@ -176,7 +176,7 @@ class ChannelChecker:
 			))
 
 		# TEST 2: ffprobe
-		vinfo_cmd = GetVideoInfoCommand(inp=ts_file, cwd=self.cwd, timeout_sec=10)
+		vinfo_cmd = VideoInfoCommand(inp=ts_file, cwd=self.cwd)
 		vinfo_res = vinfo_cmd.run()
 
 		vformat_name = pydash.get(vinfo_res.stdout, 'format.format_name')

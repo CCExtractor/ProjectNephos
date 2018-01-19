@@ -34,7 +34,7 @@ class TemplatedScriptJob(BaseJob):
 		_cmd_params = command_config
 		if isinstance(command_config, str):
 			_cmd_params = {
-				'cmd': command_config
+				'cmd': command_config,
 			}
 
 		cwd = self.cwd

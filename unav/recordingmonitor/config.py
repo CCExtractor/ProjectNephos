@@ -254,7 +254,8 @@ jobs:
           type: TypeChannelSelect
 
       main:
-        out: '{job_launch_date_from:%H%M}-{job_name_slug}.mpg'
+        # out: '{job_launch_date_from:%H%M}-{job_name_slug}.mpg'
+        out: 'output.mpg'
 
       after:
 

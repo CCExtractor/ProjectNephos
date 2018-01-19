@@ -135,6 +135,19 @@ class StreamWrapper:
 			self.fd.close()
 
 
+################################################################################
+# COMMAND FABRIC
+################################################################################
+class CommandFabric:
+	def get_command(self):
+		pass
+
+
+################################################################################
+# COMMANDS
+################################################################################
+
+
 class Command:
 	def __init__(self, cmd, cwd='', inp=None, out=None, timeout_sec=None):
 
@@ -289,7 +302,7 @@ class CaptureCommand(Command):
 		return res
 
 
-class GetVideoInfoCommand(Command):
+class VideoInfoCommand(Command):
 	'''
 	Wrapper for ffprobe
 
@@ -299,9 +312,11 @@ class GetVideoInfoCommand(Command):
 
 	Example of response:
 
+	..codeblock::
+
 	{
 		"format": {
-			"filename": "/home/aman/projects/000-money/xirvik/recording-monitor-git/tmp/maintenance/channel_on_air/8256cf0f-29d7-4dfd-b61b-7b020a8f4c67/chunk.ts",
+			"filename": "/home/tmp/maintenance/channel_on_air/8256cf0f-29d7-4dfd-b61b-7b020a8f4c67/chunk.ts",
 			"nb_streams": 5,
 			"nb_programs": 1,
 			"format_name": "mpegts",
@@ -316,12 +331,12 @@ class GetVideoInfoCommand(Command):
 
 
 	'''
-	def __init__(self, inp, cwd='', timeout_sec=None):
+	def __init__(self, inp, cwd='', timeout_sec=10):
 
 		# TODO: find a better way to validate input:
 		ifst = StreamWrapper(inp, cwd=cwd, mode='r')
 		if not ifst.path:
-			raise ValueError('parameter `inp` of GetVideoInfoCommand MUST be a file-path')
+			raise ValueError('parameter `inp` of VideoInfoCommand MUST be a file-path')
 
 		cmd = 'ffprobe -loglevel error -print_format json -show_format -hide_banner {inp}'.format(
 			inp=inp,
