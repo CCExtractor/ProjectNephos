@@ -1,0 +1,309 @@
+#!/bin/bash
+#
+# /usr/local/bin/cc-extract-teletext <filename> [<TP>]
+#
+# Extract the timestamped closed captioning from an mpeg-ts file.
+#
+# Written on 2012-02-08 (Kai Chan/FFS)
+#
+# Dependencies:
+#       CCExtractor 0.69-a2 or later from Carlos Fernandez
+#       Designed to be called by check-cc-file.
+#
+# Changelog:
+#
+#       2015-10-28 Forked from cc-extract-macgamma
+#       2015-10-28 Add header regeneration from cc-extract-la.sh
+#       2014-12-18 Forked from cc-extract-tmm
+#       2014-04-15 Remove any 7F DEL character
+#       2013-12-14 Remove |TLT, keep $LANG in header only
+#       2013-09-14 Reference time fixed in ccextractor-0.67-a08
+#       2013-07-17 New ccextractor 0.67-a04, use language ISO 639-3 instead of TLT -- and SVT1 is 199
+#       2013-07-13 Use both ccextractor 0.67-a02 and a03 to get recalcitrant teletext
+#       2013-07-03 New ccextractor 0.66 with deduplication support for DR1 and NRK1
+#       2013-06-21 New ccextractor 0.66-a7 with better teletext support
+#       2013-06-19 New ccextractor 0.66-a6 with fixed segfault
+#       2013-06-18 New ccextractor 0.66-a5 with working -pn
+#       2013-06-10 New ccextractor 0.66-a4 with -autoprogram and -UCLA
+#       2012-10-17 Forked cc-extract -- customized for cogsmacmini
+#       2012-05-25 Add ISO country code
+#       2012-02-12 Use mpg rather than m2p files (tentative)
+#       2012-02-08 Forked from fix_cc_with_ccextractor
+#       2012-02-07 Copy kali:/tvspare/software/ccextractor/linux/ccextractor to /usr/local/bin
+#
+# ------------------------------------------------------------------------------
+
+LOC_CCEXTRACTOR="/home/redhen/software/ccextractor"
+
+# Help screen
+if [ "$1" = "-h" -o "$1" = "--help" -o "$1" = "help" ]
+ then echo -e "\n\tExtract the teletext from an mpeg-ts file."
+  echo -e "\n\t\t`basename $0` <filename> [<TP>]"
+# echo -e "\n\tExample (currently customized to $LOC -- adjust as needed):"
+  echo -e "\n\tExample:"
+  echo -e "\n\t\t`basename $0` 2012-03-31_1900_CZ_CT1_Udalosti.mpg"
+  echo -e "\n\tThe script typically knows the teletext page number (TP); be explicit for override only."
+  echo -e "\n\tCalled by check-cc-file but can be run manually!"
+  echo -e "\n\tTo run it manually, make sure a .txt or .t is present.\n"
+   exit
+fi
+
+# OSX customizations (use GNU Core Utilities from MacPorts coreutils)
+if [ "$(uname)" = "Darwin" ]
+  then DAT="gdate" SED="gsed" STAT="gstat" SEQ="gseq" MV="gmv"
+  else DAT="date"  SED="sed"  STAT="stat"  SEQ="seq"  MV="mv"
+fi
+
+# Filename
+if [ -z $1 ]
+  then echo -e "\n\tUsage: $0 <filename> [<TP>]\n" ; exit
+  else FIL="$1"
+fi
+
+# The script simply runs in the current directory
+HOST="$( hostname -s )"
+DIR=`pwd`
+FIL="${FIL%.*}"
+
+# File existence and extension
+if [ -f $DIR/$FIL.mpg -o -f $DDIR/$FIL.mpg ] ; then EXT=mpg
+  elif [ -f $DIR/$FIL.ts -o -f $DDIR/$FIL.ts ] ; then EXT=ts
+  elif [ -f $DDIR/$FIL.ccx.bin ] ; then EXT=ccx.bin
+    else echo -e "\n\tUnable to find $FIL.mpg, ts, or ccx.bin\n" ; exit
+fi
+
+# Get the components of the file name
+eval "$( echo "$FIL" | $SED -r 's:[0-9_-]{15}_([A-Z]{2})_([A-Za-z0-9-]{2,20})_(.*):CTRY=\1 NWK=\2 SHW=\3:' )"
+
+# Set the teletext page and ISO 639-3 language -- can also be placed in a parameter file
+case $NWK in
+   1TV               ) TP=888 ; CTRY=RU ; LANG=RUS ; LOC="Europe/Moscow" ; SRC="Saratov, Russia" ;;
+   TVC               ) TP=888 ; CTRY=RU ; LANG=RUS ; LOC="Europe/Moscow" ; SRC="Saratov, Russia" ;;
+   AlJazeera-EU      ) TP=150 ; CTRY=DE ; LANG=DEU ;;
+   CNN-International ) TP=150 ; CTRY=DE ; LANG=DEU ;;
+   CT1               ) TP=888 ; CTRY=CZ ; LANG=CES ; LOC="Europe/Prague" ; SRC="Petr Kutalek, Prague" ;;
+   DasErste          ) TP=150 ; CTRY=DE ; LANG=DEU ;;
+   EuroNews          ) TP=150 ; CTRY=DE ; LANG=DEU ;;
+   N-TV              ) TP=341 ; CTRY=DE ; LANG=DEU ;;
+   RTL               ) TP=888 ; CTRY=DE ; LANG=DEU ;;
+   Tagesschau24      ) TP=150 ; CTRY=DE ; LANG=DEU ;;
+   ZDF               ) TP=777 ; CTRY=DE ; LANG=DEU ;;
+   La-Sexta          ) TP=888 ; CTRY=ES ; LANG=SPA ; LOC="Europe/Madrid" ; SRC="Universidad de Navarra, Spain" ;;
+   Cuatro            ) TP=888 ; CTRY=ES ; LANG=SPA ; LOC="Europe/Madrid" ; SRC="Universidad de Navarra, Spain" ;;
+   Tele-5            ) TP=888 ; CTRY=ES ; LANG=SPA ; LOC="Europe/Madrid" ; SRC="Universidad de Navarra, Spain" ;;
+   Antena-3          ) TP=888 ; CTRY=ES ; LANG=SPA ; LOC="Europe/Madrid" ; SRC="Universidad de Navarra, Spain" ;;
+   *             ) echo -e "\n\tUnknown network $NWK -- please add to `basename $0`\n" ; exit ;;
+esac
+
+# Default for new channels (not very useful -- all channels should be listed)
+if [ "$TP" = "" ] ; then
+  case $HOST in
+    RedHenOS) CTRY=DE ; TP=777 ; LANG=DEU ;;
+    mmm     ) CTRY=ES ; TP=888 ; LANG=SPA ;;
+    tmm     ) CTRY=DK ; TP=398 ; LANG=DAN ;;
+  esac
+fi
+
+# Manual TP override
+if [ -n "$2" ]
+  then TP="$2"
+fi
+
+# Special settings by show name
+case $SHW in
+  Oddasat ) LANG=SME ;;
+esac
+
+# Baseline UTC time based on file name
+BTIM="$( echo $FIL | $SED -r s/'([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{2})([0-9]{2}).*/\1\ \2:\3:00/' )"
+
+# Rename file to UTC, assuming it was named by local time (comment out by default)
+#NEW=$( eval "$DAT -ud 'TZ=\"$LOC\" $BTIM' +%Y-%m-%d_%H%M" )
+#mv $FIL.ts $NEW${FIL:15:50}.mpg
+#echo -e "\tmv $FIL.ts $NEW${FIL:15:50}.mpg" ; exit  # Run separately if needed
+
+# Look for a header file
+HED="$( grep -l ^'TOP' $FIL.txt 2>/dev/null | head -n 1 )"
+
+# Create a new header file, from scratch if needed (borrowed from cc-extract-la.sh)
+if [ -n "$HED" ]
+
+  then
+
+    # Clip the header lines and create a new header file
+    HEAD="$( $SED -n '/^LBT/=' $HED | $SED '1q' )"
+    OFS=$IFS IFS=$'\n' HEAD=( `head -n $HEAD $HED` )
+    if [ -f $FIL.txt ] ; then $MV --backup=numbered $FIL.txt $FIL.txt-orig ; fi
+    for LIN in "${HEAD[@]}"; do echo "$LIN" >> $FIL.txt ; done ; IFS=$OFS
+
+    # Verify the duration is set (should be done by a check-cc-* script)
+    if [ "$( grep ^'DUR|' $FIL.txt | cut -d"|" -f2 )" = "" ] ; then
+      LEN="$(ffprobe $DIR/$FIL.$EXT 2>&1 | grep Duration | $SED -rn s/'.*([0-9]{1}:[0-9]{1,2}:[0-9]{1,2}\.[0-9]{2,3}).*/\1/p' )"
+      $SED -i -r "/DUR\|/cDUR|$LEN" $FIL.txt
+    fi
+
+  else
+
+    # Define the first timestamp
+    echo "TOP|$( $DAT -d "$BTIM" +%Y%m%d%H%M%S )|$FIL" > $FIL.txt
+
+    # Generate the video length tag (should perhaps be done with the finished mp4 file?)
+    # Only print the modified line (see http://www.grymoire.com/Unix/Sed.html#uh-9)
+    LEN="$(ffprobe $DIR/$FIL.$EXT 2>&1 | grep Duration | $SED -rn s/'.*([0-9]{1}:[0-9]{1,2}:[0-9]{1,2}\.[0-9]{2,3}).*/\1/p' )"
+
+    # Add the collection name, an identifier, and the video duration (insert after the first timestamp)
+    $SED -i "1a`echo "COL|Communication Studies Archive, UCLA\nUID|$(uuid -v1)\nDUR|"$LEN""`" $FIL.txt
+
+    # Derive the local broadcast time (assumes the file name is correctly UTC)
+    export TZ="$LOC"
+    T="${FIL:0:10} ${FIL:11:2}:${FIL:13:2}"
+    LBT="$( eval $DAT -d \"UTC $T\" \'+%Y-%m-%d %H:%M:%S %Z\' ) $LOC"
+
+    # Unsure what this was used for -- check cc-extract-la.sh?
+    #LBT=$( eval "$DAT -d 'TZ=\"America/Los_Angeles\" $BTIM' '+%Y-%m-%d %H:%M:00'")" America/Los_Angeles"
+    #$SED -r "/LBT\|/cLBT|$LBT" $FIL.txt
+
+    # Add any comment and the local broadcast time and timezone
+    echo -e "SRC|$SRC\nCMT|\nLAN|$LANG\nLBT|$LBT" >> $FIL.txt
+
+fi
+
+# Get the end line
+if [ "$END" = "" ] ; then END="$( grep ^'END|' $FIL.txt 2>/dev/null | cut -d":" -f2 | head -n 1 )" ; fi
+
+# If none is available, try to synthesize
+if [ "$END" = "" ] ; then
+
+  # Get the duration from the header
+  if [ "$LEN" = "" ] ; then LEN="$( grep ^'DUR|' $FIL.txt 2>/dev/null | cut -d"|" -f2 | head -n 1 )" ; fi
+
+  # Convert the duration to seconds
+  SECS="$(echo $($DAT -u -d 1970-01-01\ $LEN +%s))"
+
+  # Add the number of seconds to the initial time
+  LTIM=$( $DAT -d "+$SECS seconds"\ "$BTIM" +%F\ %H:%M:%S)
+
+  # Define the last timestamp, converting spaces to underscores
+  END="END|$( $DAT -d "$LTIM" +%Y%m%d%H%M%S )|$FIL"
+
+fi
+
+# B. Time conversion
+
+# Extract the start date/time from the TOP line of the txt file
+BTIM=`grep -E '^TOP\|' $FIL.txt | head -n 1 | awk -F'|' '{print \$2}'`
+
+# Convert the start time from YYYYMMDDHHMMSS into YYYY-MM-DD HH:MM:SS format
+BTIM2=`echo $BTIM | $SED -r 's/([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})/\1-\2-\3 \4:\5:\6/'`
+
+# Convert to the base time in seconds (unix epoch)
+BTIM="$( $DAT -ud "$BTIM2" +%s )"
+
+# Get the components of the file name
+eval "$( echo "$FIL" | $SED -r 's/[0-9_-]{15}_([A-Z]{2})_([A-Za-z0-9-]{2,20})_(.*)/CTRY=\1 NWK=\2 SHW=\3/' )"
+
+# Welcome
+echo -en "\n   Ready to extract the captions from $FIL.$EXT ..." ; sleep 10 ; echo -e "\n"
+
+# A. Extract the teletext
+
+# Call CCExtractor
+# -ts                                  - input is a MPEG TS file
+# -datets                              - write time as YYYYMMDDHHMMss.ms
+# -autoprogram                         - automatically select the first good program ID
+# -pn $PN                              - select a known program number
+# -tpage $TP                           - teletext page
+# -1 or -2 or -12                      - primary transcript, secondary transcript, or both (not for teletext?)
+# -UCLA                                - adds TLT|$TP
+# -noru                                - do not repeat lines to simulate roll-up
+# -out=ttxt                            - plain text output format
+# -utf8                                - character set
+# -unixts $BTIM                        - unix reference time (number of seconds since epoch)
+# -delay                               - seconds adjustment
+# -o $FIL.ccx.out                      - named output
+# $FIL.$EXT                            - input MPEG file
+
+# Debug mode
+#set -xv
+
+# Try the known teletext page first
+if [ -f $FIL.$EXT ] ; then
+  echo -e "\tExtracting teletext page $TP from the transport stream ..."
+  #ccextractor -datets -ttxt -tpage $TP -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+  ${LOC_CCEXTRACTOR} -datets -ttxt -autoprogram -tpage $TP -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -unixts $BTIM -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+fi
+
+# If the teletext page fails, let ccextractor look for it
+if [ -s $FIL.ccx.out ] ; then OUTSIZE="$( $STAT -c%s $FIL.ccx.out )" ; else OUTSIZE=0 ; fi
+if [ ! -s $FIL.ccx.out -o "$OUTSIZE" -le "100" ]
+  then echo -e "\tExtracting teletext page $TP using the default version of ccextractor failed -- trying default page ..."
+    ${LOC_CCEXTRACTOR} -datets -ttxt -autoprogram -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -unixts $BTIM -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+fi
+
+# If the default version of ccextractor fails, try another version
+if [ -s $FIL.ccx.out ] ; then OUTSIZE="$( $STAT -c%s $FIL.ccx.out )" ; else OUTSIZE=0 ; fi
+if [ ! -s $FIL.ccx.out -o "$OUTSIZE" -le "100" ]
+  then echo -e "\tExtracting teletext using the default version of ccextractor failed -- trying version 0.69-a02 ..."
+    ccextractor-0.69-a02 -ts -ttxt -autoprogram -tpage $TP -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -delay 0 -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+fi
+
+# Finally, try autoprogram on the alternate version
+if [ -s $FIL.ccx.out ] ; then OUTSIZE="$( $STAT -c%s $FIL.ccx.out )" ; else OUTSIZE=0 ; fi
+if [ ! -s $FIL.ccx.out -o "$OUTSIZE" -le "100" ]
+  then echo -e "\tExtracting teletext page $TP from version 0.69-a02 failed -- trying default page on version 0.69-a02 ..."
+    ccextractor-0.69-a02 -ts -ttxt -autoprogram -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -delay 0 -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+fi
+
+# Debug off
+#set +xv
+
+# Remove the byte order mark (BOM)
+$SED -i '1 s/^\xef\xbb\xbf//' $FIL.ccx.out
+
+# Remove any 7F DEL character
+$SED -i -e 's/\x7F//g' $FIL.ccx.out
+
+# Get the teletext page number used by ccextractor
+TPX="$( grep -m1 '^2' $FIL.ccx.out | $SED -r 's/.*([0-9]{3})\|?TLT.*/\1/' )"
+
+# Remove the teletext page number and TLT from the body
+$SED -r -i "s/$TPX\|?TLT\|/CC1|/" $FIL.ccx.out
+
+# Add the teletext page used by ccextractor to the header
+if [ -n "$TPX" ] ; then $SED -i '/^TTP|/d' $FIL.txt ; $SED -i "/^LBT|/i TTP|$TPX" $FIL.txt ; fi
+
+# Delete any empty .ccx.stout and .ccx.stderr files
+if [ ! -s "$FIL.ccx.stdout" ] ; then rm -f $FIL.ccx.stdout ; fi
+if [ ! -s "$FIL.ccx.stderr" ] ; then rm -f $FIL.ccx.stderr ; fi
+
+# B. Add a header
+
+# Does the header file have an END line?
+if [ -f "$HED" ] ; then END="$( grep ^'END|' $HED )"
+
+  # If it does, use it to create a new header file
+  if [ "$END" != "" ] ; then HEAD="$( $SED -n '/^LBT/=' $HED | $SED '1q' )"
+    OFS=$IFS IFS=$'\n' HEAD=( `head -n $HEAD $HED` )
+    if [ -f $FIL.txt ] ; then $MV --backup=numbered $FIL.txt $FIL.txt-orig ; fi
+    for LIN in "${HEAD[@]}"; do echo "$LIN" >> $FIL.txt ; done ; IFS=$OFS
+  fi
+fi
+
+# Add CC to the header
+cat $FIL.ccx.out >> $FIL.txt
+
+# Set the last timestamp if needed
+if [ "$END" != "" ] ; then echo "$END" >> $FIL.txt ; fi
+
+# Convert from DOS format (may not be needed)
+dos2unix -q -k -o $FIL.txt
+
+# Receipt
+if [ -s $FIL.txt ] ; then SIZE="$( $STAT -c%s $FIL.txt )" ; else SIZE=0 ; fi
+if [ ! -s $FIL.txt -o "$SIZE" -le "100" ]
+  then echo -e "\n\tFailed -- too small or missing $FIL.txt\n"
+  else echo -e "\n\tSuccess -- $FIL.txt\n"
+    rm $FIL.ccx.*
+fi
+
+# EOF
