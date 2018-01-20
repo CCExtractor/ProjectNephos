@@ -25,6 +25,12 @@ _channel_fields = {
 	'name_short': fields.String,
 	'ip_string': fields.String,
 	'channel_status': fields.String(attribute='channel_status.status'),
+
+	'meta_teletext_page': fields.String,
+	'meta_country_code': fields.String,
+	'meta_language_code3': fields.String,
+	'meta_timezone': fields.String,
+	'meta_video_source': fields.String,
 }
 
 _channel_status_fields = {
@@ -35,10 +41,16 @@ _channel_status_fields = {
 }
 
 # input
-_parser = reqparse.RequestParser()
-_parser.add_argument('name')
-_parser.add_argument('name_short')
-_parser.add_argument('ip_string')
+_parser_channel = reqparse.RequestParser()
+_parser_channel.add_argument('name')
+_parser_channel.add_argument('name_short')
+_parser_channel.add_argument('ip_string')
+# channel meta
+_parser_channel.add_argument('meta_teletext_page')
+_parser_channel.add_argument('meta_country_code')
+_parser_channel.add_argument('meta_language_code3')
+_parser_channel.add_argument('meta_timezone')
+_parser_channel.add_argument('meta_video_source')
 
 
 class ChannelsListResource(Resource):
@@ -51,7 +63,7 @@ class ChannelsListResource(Resource):
 	# CREATE CHANNEL
 	@marshal_with(_channel_fields, envelope='data')
 	def post(self):
-		args = _parser.parse_args()
+		args = _parser_channel.parse_args()
 		log.debug('channel create, args: %s', args)
 
 		entity = Channel(**args)
@@ -77,7 +89,7 @@ class ChannelsResource(Resource):
 	def put(self, ID):
 		# ch = Channel.query.get(ID)
 
-		args = _parser.parse_args()
+		args = _parser_channel.parse_args()
 		# ch.validate()
 
 		db = current_app.db

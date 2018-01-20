@@ -50,13 +50,19 @@ _repeat_fields = {
 
 _job_fields = {
 	'ID':           fields.String,
-	'channel_ID':   fields.String,
 	'name':         fields.String,
 	'date_from':    DateTimeWithUtc,
 	'duration_sec': fields.Integer,
 	'timezone':     fields.String,
 	'is_removed':   fields.Boolean,
-	'repeat':       fields.Nested(_repeat_fields, allow_null=True)
+	'repeat':       fields.Nested(_repeat_fields, allow_null=True),
+
+	'channel_ID':   fields.String,
+	'meta_teletext_page': fields.String,
+	'meta_country_code': fields.String,
+	'meta_language_code3': fields.String,
+	'meta_timezone': fields.String,
+	'meta_video_source': fields.String,
 }
 
 # input
@@ -67,9 +73,15 @@ _parser.add_argument('duration_sec', type=int)
 _parser.add_argument('timezone')
 _parser.add_argument('template_name')
 _parser.add_argument('job_params', type=to_dict)
+_parser.add_argument('repeat', type=to_dict)
+
 _parser.add_argument('channel_ID')
 _parser.add_argument('channel_name')
-_parser.add_argument('repeat', type=to_dict)
+_parser.add_argument('meta_teletext_page')
+_parser.add_argument('meta_country_code')
+_parser.add_argument('meta_language_code3')
+_parser.add_argument('meta_timezone')
+_parser.add_argument('meta_video_source')
 
 
 # BUG: refactor

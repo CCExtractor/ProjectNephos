@@ -22,6 +22,12 @@ class Channel(MixinIdGuid, Model):
 	# rewrite schema (especially now - we don't have migration tools)
 	ip_string = sa.Column(sa.String(128), nullable=False)
 
+	meta_teletext_page = sa.Column(sa.String(128))
+	meta_country_code = sa.Column(sa.String(16))
+	meta_language_code3 = sa.Column(sa.String(16))
+	meta_timezone = sa.Column(sa.String(128))
+	meta_video_source = sa.Column(sa.String(1200))
+
 	channel_status = relationship(
 		'ChannelStatus',
 		uselist=False,
