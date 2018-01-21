@@ -369,3 +369,102 @@ class VideoInfoCommand(Command):
 		res.stdout = js
 
 		return res
+
+
+class ExtractCaptionsCommand(Command):
+	'''
+	Wrapper for ccextractor
+	'''
+	def __init__(self, inp, cwd='', timeout_sec=None, app='ccextractor', tpage=None, extra_params=None):
+
+		# TODO: find a better way to validate input:
+		ifst = StreamWrapper(inp, cwd=cwd, mode='r')
+		if not ifst.path:
+			raise ValueError('parameter `inp` of ExtractCaptionsCommand MUST be a file-path')
+
+		if not app:
+			app = 'ccextractor'
+
+		# Call CCExtractor
+		# -ts                                  - input is a MPEG TS file
+		# -datets                              - write time as YYYYMMDDHHMMss.ms
+		# -autoprogram                         - automatically select the first good program ID
+		# -pn $PN                              - select a known program number
+		# -tpage $TP                           - teletext page
+		# -1 or -2 or -12                      - primary transcript, secondary transcript, or both (not for teletext?)
+		# -UCLA                                - adds TLT|$TP
+		# -noru                                - do not repeat lines to simulate roll-up
+		# -out=ttxt                            - plain text output format
+		# -utf8                                - character set
+		# -unixts $BTIM                        - unix reference time (number of seconds since epoch)
+		# -delay                               - seconds adjustment
+		# -o $FIL.ccx.out                      - named output
+		# $FIL.$EXT                            - input MPEG file
+
+		# ccextractor          -ttxt -autoprogram -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -datets -unixts $BTIM -tpage $TP -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+		# ccextractor          -ttxt -autoprogram -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -datets -unixts $BTIM            -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+		# ccextractor-0.69-a02 -ttxt -autoprogram -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -delay 0 -ts          -tpage $TP -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+		# ccextractor-0.69-a02 -ttxt -autoprogram -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -delay 0 -ts                     -o $FIL.ccx.out $FIL.$EXT > $FIL.ccx.stout 2> $FIL.ccx.stderr
+
+		if tpage:
+			tpage_str = '-tpage {}'.format(tpage)
+		else:
+			tpage_str = ''
+
+		cargs = '-ttxt -autoprogram -UCLA -noru -utf8 --nofontcolor -parsepat -parsepmt -stdout'
+
+		cmd = '{app} {cargs} {tpage_str} {extra_params} {inp}'.format(
+			app=app,
+			inp=inp,
+			cargs=cargs,
+			tpage_str=tpage_str,
+			extra_params=extra_params,
+		)
+
+		super().__init__(
+			cmd=cmd,
+			cwd=cwd,
+
+			out='PIPE',
+			timeout_sec=timeout_sec,
+		)
+
+	def run(self):
+
+		try:
+			res = super().run()
+		except CommandError as exc:
+			# ffprobe sends a lot of info to the stderr
+			# this leads to EXPECTED exception, but we will check the stream error
+			# using return-code
+			if exc.rc == 0:
+				res = command_error2result(exc)
+			else:
+				raise
+
+		subs = res.stdout
+
+		res.subs = subs
+		res.length = len(subs)
+
+		# # Remove the byte order mark (BOM)
+		# $SED -i '1 s/^\xef\xbb\xbf//' $FIL.ccx.out
+
+		# # Remove any 7F DEL character
+		# $SED -i -e 's/\x7F//g' $FIL.ccx.out
+
+		# # Get the teletext page number used by ccextractor
+		# TPX="$( grep -m1 '^2' $FIL.ccx.out | $SED -r 's/.*([0-9]{3})\|?TLT.*/\1/' )"
+
+		# # Remove the teletext page number and TLT from the body
+		# $SED -r -i "s/$TPX\|?TLT\|/CC1|/" $FIL.ccx.out
+
+		##########################
+		# dos2unix
+		# Convert from DOS format (may not be needed)
+		# dos2unix -q -k -o $FIL.txt
+
+		# check for size
+		#
+
+		return res

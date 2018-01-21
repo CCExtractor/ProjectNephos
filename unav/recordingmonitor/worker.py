@@ -260,6 +260,12 @@ class ScheduledWorker:
 
 			'channel_ID': channel_ID,
 
+			'meta_teletext_page':  ji.meta_teletext_page,
+			'meta_country_code':   ji.meta_country_code,
+			'meta_language_code3': ji.meta_language_code3,
+			'meta_timezone':       ji.meta_timezone,
+			'meta_video_source':   ji.meta_video_source,
+
 			# TODO: remove, bcz it is necessary only for "capturing" job:
 			'capture_address': self.__app_config.get('capture.address'),
 		})
