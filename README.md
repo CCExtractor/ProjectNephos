@@ -223,7 +223,7 @@ pyinstaller -y --log-level=WARN pyinstaller/recordingmonitor.spec
 
 ## OBSOLETE: build Docker image with installed recordingmonitor
 
-**OBSOLETE**: nobody will use docker for running this app :(
+**OBSOLETE**: nobody will use docker for running this app `:(`
 
 You need to have targzipped package in the `/dist` folder (see _Publish new
 version_ section of this guide)
@@ -238,6 +238,13 @@ docker build -f docker/recordingmonitor/Dockerfile -t unav/recordingmonitor .
 
 ## API USAGE
 
+### Channel: list
+
+```bash
+curl -X GET \
+    http://127.0.0.1:5000/api/v0/channels
+```
+
 ### Channel: create
 
 ```bash
@@ -248,6 +255,13 @@ curl -X POST \
         "name": "TVE1",
         "ip_string": "239.255.20.1:1234"
     }'
+```
+
+### Job: list
+
+```bash
+curl -X GET \
+    http://127.0.0.1:5000/api/v0/jobs
 ```
 
 ### Job: create
