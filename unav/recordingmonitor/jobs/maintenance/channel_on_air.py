@@ -22,9 +22,9 @@ from ...errors import BaseError
 
 # from ...utils.string import format_with_emptydefault
 
-from ..syscommand import Command
-from ..syscommand import CaptureCommand
-from ..syscommand import VideoInfoCommand
+from ..commands import Command
+from ..commands import CaptureCommand
+from ..commands import VideoInfoCommand
 
 
 log = logging.getLogger(__name__)

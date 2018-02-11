@@ -9,9 +9,9 @@ from logging import getLogger
 
 from ._common import StarterFabric
 from .scripttpl import TemplatedScriptJob
-from ..syscommand import CaptureCommand
-from ..syscommand import VideoInfoCommand
-from ..syscommand import ExtractCaptionsCommand
+from ..commands import CaptureCommand
+from ..commands import VideoInfoCommand
+from ..commands import ExtractCaptionsCommand
 
 from ...utils.string import format_with_emptydefault
 from ...utils.string import word_count

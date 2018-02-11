@@ -4,7 +4,7 @@ from logging import getLogger
 
 from ._common import StarterFabric
 from ._common import BaseJob
-from ..syscommand import Command
+from ..commands import Command
 from ...utils.string import format_with_emptydefault
 
 from ..result_processor import BaseJobResultProcessor

@@ -444,9 +444,6 @@ class ExtractCaptionsCommand(Command):
 
 		subs = res.stdout
 
-		res.subs = subs
-		res.length = len(subs)
-
 		# # Remove the byte order mark (BOM)
 		# $SED -i '1 s/^\xef\xbb\xbf//' $FIL.ccx.out
 
@@ -464,7 +461,7 @@ class ExtractCaptionsCommand(Command):
 		# Convert from DOS format (may not be needed)
 		# dos2unix -q -k -o $FIL.txt
 
-		# check for size
-		#
+		res.subs = subs
+		res.length = len(subs)
 
 		return res
