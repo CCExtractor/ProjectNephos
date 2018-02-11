@@ -3,6 +3,7 @@
 import pytest
 from .string import format_with_emptydefault
 from .string import decode_and_superstrip
+from .string import word_count
 
 
 class Test_decode_and_superstrip:
@@ -48,3 +49,30 @@ class Test_format_with_emptydefault:
 		act = format_with_emptydefault(None, data)
 
 		assert act is None
+
+
+class Test_word_count:
+
+	def test_none(self):
+		act = word_count(None)
+		assert act is None
+
+	def test_empty(self):
+		act = word_count('')
+		assert act == 0
+
+	@pytest.mark.parametrize('s, exp', [
+		('x', 1),
+		('John goes to cafe', 4),
+		('11:21:32 John goes to cafe', 4),
+		(
+			'''11:21:32
+
+			John goes to cafe''',
+			4
+		),
+	])
+	def test_common(self, s, exp):
+		act = word_count(s)
+
+		assert act == exp

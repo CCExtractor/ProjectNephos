@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
+import datetime
 
+import arrow
 import pydash
 from logging import getLogger
 
@@ -12,6 +14,7 @@ from ..syscommand import VideoInfoCommand
 from ..syscommand import ExtractCaptionsCommand
 
 from ...utils.string import format_with_emptydefault
+from ...utils.string import word_count
 
 from ...models.tv import Channel
 
@@ -72,9 +75,9 @@ class CaptureStreamJob(TemplatedScriptJob):
 			cwd=self.cwd
 		))
 
-		# 1a Duration
-		_video_duration = float(pydash.get(res_capinfo.stdout, 'format.duration'))
-		self.log.info('Video duration is %s', _video_duration)
+		# 1a Duration (in hours)
+		_video_duration_hours = float(pydash.get(res_capinfo.stdout, 'format.duration'))
+		self.log.info('Video duration is %s', _video_duration_hours)
 
 		# 1a Size
 		_picture_size = None
@@ -104,7 +107,7 @@ class CaptureStreamJob(TemplatedScriptJob):
 
 		# video meta, taken from the channel-meta. It is default values
 		_meta_teletext_page =  self.job_params.get('meta_teletext_page',   self.channel.meta_teletext_page)     # noqa: E222
-		_meta_country_code =   self.job_params.get('meta_country_code',    self.channel.meta_country_code)      # noqa: E222
+		#_meta_country_code =   self.job_params.get('meta_country_code',    self.channel.meta_country_code)      # noqa: E222
 		_meta_language_code3 = self.job_params.get('meta_language_code3',  self.channel.meta_language_code3)    # noqa: E222
 		_meta_timezone =       self.job_params.get('meta_timezone',        self.channel.meta_timezone)          # noqa: E222
 		_meta_video_source =   self.job_params.get('meta_video_source',    self.channel.meta_video_source)      # noqa: E222
@@ -120,7 +123,6 @@ class CaptureStreamJob(TemplatedScriptJob):
 		# ======================================================================
 		# STEP: Word count
 		# ======================================================================
-		# echo -e "unav \t$CCWORDS \t$CCWORDS2 \t$CCDIFF \t$ScheDUR \t$ffDURs \t$TIMDIFF \t$FIL.$EXT" > $FIL.len
 		wc = self._word_count(subs)
 
 		# ======================================================================
@@ -128,23 +130,54 @@ class CaptureStreamJob(TemplatedScriptJob):
 		# ======================================================================
 
 		with open(os.path.join(self.cwd, filename_len), 'w') as flen:
-			flen.write(wc)
+			# echo -e "unav \t$CCWORDS \t$CCWORDS2 \t$CCDIFF \t$ScheDUR \t$ffDURs \t$TIMDIFF \t$FIL.$EXT" > $FIL.len
+			_len_txt = (
+				'unav\t{CCWORDS}\t{CCWORDS2}\t{CCDIFF}\t{ScheDUR}\t{ffDURs}\t{TIMDIFF}\t{filename}'
+			).format(
+				CCWORDS=wc,
+				CCWORDS2=0,
+				CCDIFF=-wc,
+				ScheDUR=_video_duration_hours,
+				ffDURs=_video_duration_hours,
+				TIMDIFF=0,
+				filename=filename,
+			)
+			flen.write(_len_txt)
 
 		# ======================================================================
 		# STEP: save .txt meta file
 		# ======================================================================
 
 		with open(os.path.join(self.cwd, filename_txt), 'w') as ftxt:
-			ftxt.write('TOP|{%Y%m%d%H%M%S}|{}'.format(self.date_from, filename))        # TOP|20170811210000|2017-08-11_2100_ES_Antena-3_Noticias_Deportes_El_tiempo
-			ftxt.write('COL|Communication Studies Archive, UCLA')                       # COL|Communication Studies Archive, UCLA
-			ftxt.write('UID|{}'.format(self.job_launch.ID))                             # UID|0339184e-7ee6-11e7-8fb0-005056b6e57b
-			# TODO: do ftxt.write('DUR|{}'.format(self.job_launch.ID))                             # DUR|00:00:00
-			ftxt.write('VID|{}|{}'.format(_scaled_size, _picture_size))                 # VID||
-			ftxt.write('SRC|{}'.format(_meta_video_source))                             # SRC|Universidad de Navarra, Spain
-			# TODO: WHAT IS CMT  ftxt.write('CMT|{}'.format(''))                                             # CMT|
-			ftxt.write('LAN|{}'.format(_meta_language_code3))                           # LAN|SPA
-			# TODO: use arrow ftxt.write('LBT|{}'.format(self.job_launch.ID))                             # LBT|2017-08-11 23:00:00 CEST Europe/Madrid
-			ftxt.write('END|{%Y%m%d%H%M%S}|{}'.format(self.date_from, filename))        # END --- SAME AS TOP
+
+			_LBT = arrow.get(self.date_from).at(_meta_timezone or 'local').format('YYYY-MM-DD HH:mm:ss')
+
+			_txt_header = (
+				'TOP|{%Y%m%d%H%M%S:from_date}|{filename}\n'         # TOP|20170811210000|2017-08-11_2100_ES_Antena-3_Noticias_Deportes_El_tiempo
+				'COL|{description}\n'                               # COL|Communication Studies Archive, UCLA
+				'UID|{uid}\n'                                       # UID|0339184e-7ee6-11e7-8fb0-005056b6e57b
+				'DUR|{duration}\n'                                  # DUR|00:00:00
+				'VID|{scaled_size}|{picture_size}\n'                # VID|640x352|1920x1080
+				'SRC|{source}\n'                                    # SRC|Universidad de Navarra, Spain
+				'CMT|{CMT}\n'                                       # CMT|     - what the FUCK IS THIS!!!!
+				'LAN|{language_code3}\n'                            # LAN|SPA
+				'LBT|{local_from_date}\n'                           # LBT|2017-08-11 23:00:00 CEST Europe/Madrid
+				'END|{%Y%m%d%H%M%S:from_date}|{filename}\n'         # END --- SAME AS TOP
+			).format(
+				from_date=self.from_date,
+				filename=filename,
+				description='Communication Studies Archive, UCLA',
+				uid=self.job_launch.ID,
+				duration=datetime.timedelta(hours=_video_duration_hours),
+				scaled_size=_scaled_size,
+				picture_size=_picture_size,
+				source=_meta_video_source,
+				CMT='',
+				language_code3=_meta_language_code3,
+				local_from_date='{} {}'.format(_LBT, _meta_timezone),  # vecause ARROW can't handle ZZZ correctly
+			)
+
+			ftxt.write(_txt_header)
 			ftxt.write(subs)
 
 		for cmd in self.commands_list:
@@ -188,8 +221,8 @@ class CaptureStreamJob(TemplatedScriptJob):
 
 	def _extract_subs_with_ccextractor(self, inp, tp):
 		ccextractor_prms = tuple(
-			(None,                   tp,   '-datets -unixts $BTIM',),
-			(None,                   None, '-datets -unixts $BTIM',),
+			('ccextractor',          tp,   '-datets -unixts $BTIM',),
+			('ccextractor',          None, '-datets -unixts $BTIM',),
 			('ccextractor-0.69-a02', tp,   '-delay 0 -ts',),
 			('ccextractor-0.69-a02', None, '-delay 0 -ts',),
 		)
@@ -212,10 +245,8 @@ class CaptureStreamJob(TemplatedScriptJob):
 		return subs
 
 	def _word_count(self, subs):
-		# echo -e "unav \t$CCWORDS \t$CCWORDS2 \t$CCDIFF \t$ScheDUR \t$ffDURs \t$TIMDIFF \t$FIL.$EXT" > $FIL.len
-		# wc = self._word_count(subs)
-
-		return (0, 0, 0, 0, 0)
+		wc = word_count(subs)
+		return wc
 
 
 class CaptureJobResultProcessor(BaseJobResultProcessor):

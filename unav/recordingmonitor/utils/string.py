@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 
 class _DictFormatEmpty(dict):
 	def __missing__(self, key):
@@ -44,3 +46,11 @@ def decode_and_superstrip(xx):
 		s = None
 
 	return s
+
+
+def word_count(s):
+	if s is None:
+		return s
+	s1 = re.sub(r'\d+', '', s)
+	i = re.findall(r'\w+', s1)
+	return len(i)
