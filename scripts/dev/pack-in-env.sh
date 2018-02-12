@@ -56,7 +56,7 @@ python setup.py sdist
 _apschedulerpath=$(echo -e "import apscheduler\nprint(apscheduler.__file__)" | python)
 cp $_apschedulerpath $_apschedulerpath.bak
 echo "# These will be removed in APScheduler 4.0.
-release = '3.4.0' #  __import__('pkg_resources').get_distribution('APScheduler').version.split('-')[0]
+release = '3.5.1' #  __import__('pkg_resources').get_distribution('APScheduler').version.split('-')[0]
 version_info = tuple(int(x) if x.isdigit() else x for x in release.split('.'))
 version = __version__ = '.'.join(str(x) for x in version_info[:3])
 " > $_apschedulerpath

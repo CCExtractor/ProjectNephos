@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = (0, 2, 1)
+VERSION = (0, 3, 0)
 VERSION_SUFFIX = 'dev.1'
 VERSION_SUFFIX = ''
 
@@ -134,24 +134,30 @@ setup(
 	test_suite='pytest',
 
 	install_requires=[
+		'pytz             == 2018.3',
 		'PyYAML           == 3.12',
 		'python-dotenv    == 0.7.1',
-		'coloredlogs      == 7.3',
-		'pydash           == 4.2.1',
-		'arrow            >= 0.10.0,   < 0.10.99',
+		'coloredlogs      == 9.0',
+		'pydash           == 4.3.2',
+		'arrow            >= 0.12.1,   < 0.12.99',
 
-		'raven[flask]     >=6.3.0',
+		'raven[flask]     >=6.5.0',
 		'blinker          >= 1.4,      < 1.4.99',
-		'APScheduler      == 3.4.0',
-		'SQLAlchemy       >= 1.2.0b2,  < 1.2.99',
+
+		# upgrade APScheduler with pack-in-env script, there is a patch for
+		# PYInstaller and APScheduler (they are crazy, and can't work together
+		# out of the box
+		'APScheduler      == 3.5.1',
+
+		'SQLAlchemy       >= 1.2.2,  < 1.2.99',
 		'SQLAlchemy-Utils >= 0.32.21,  < 0.32.99',
 
 		'flask            == 0.12.2',
-		'Flask-SQLAlchemy >= 2.3.0,    < 2.3.99',
+		'Flask-SQLAlchemy >= 2.3.2,    < 2.3.99',
 		'Jinja2           >= 2.10,     < 2.99',
 		'flask-restful    >= 0.3.6,    < 0.3.99',
 		#'flask-restplus   >= 0.10.1,   < 0.10.99',
-		'flask-socketio   >= 2.7.0',
+		'flask-socketio   >= 2.9.3',
 
 		'python-slugify   >= 1.2.4,    < 1.2.99',
 
