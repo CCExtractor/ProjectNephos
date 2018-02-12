@@ -21,6 +21,8 @@
 /build/*
 /dist/*
 /software/multicat
+/software/multicat.bin
+/software/ccextractor-0.69-a02
 
 # ====================
 # Coverage and test results:
