@@ -338,7 +338,7 @@ class VideoInfoCommand(Command):
 		if not ifst.path:
 			raise ValueError('parameter `inp` of VideoInfoCommand MUST be a file-path')
 
-		cmd = 'ffprobe -loglevel error -print_format json -show_format -hide_banner {inp}'.format(
+		cmd = 'ffprobe -loglevel error -print_format json -show_streams -show_format -hide_banner {inp}'.format(
 			inp=inp,
 		)
 
