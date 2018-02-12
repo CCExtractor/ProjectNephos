@@ -61,7 +61,6 @@ _job_fields = {
 	'meta_teletext_page': fields.String,
 	'meta_country_code': fields.String,
 	'meta_language_code3': fields.String,
-	'meta_timezone': fields.String,
 	'meta_video_source': fields.String,
 }
 
@@ -80,7 +79,6 @@ _parser.add_argument('channel_name')
 _parser.add_argument('meta_teletext_page')
 _parser.add_argument('meta_country_code')
 _parser.add_argument('meta_language_code3')
-_parser.add_argument('meta_timezone')
 _parser.add_argument('meta_video_source')
 
 
@@ -119,7 +117,8 @@ class JobsListResource(_WithSchedulerAndDb, Resource):
 		#   * ?sort=&page=1&per_page=10
 		#   * ?sort=&page=1&per_page=10&filter=asdf
 
-		jjs = JobInfo.query.all()
+		# .limit(number_of_rows_per_page).offset(page_number*number_of_rows_per_page)
+		jjs = JobInfo.query.all()  # filter_by(is_removed=False)
 
 		return jjs
 

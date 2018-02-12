@@ -129,19 +129,23 @@ class ScheduledWorker:
 		jobs = app_config.get('maintenance.jobs')
 
 		if jobs is None:
-			log.warn('All maintenance jobs are disabled, because config is empty!')
+			log.warn('All maintenance jobs are disabled: config.maintenance.jobs is empty)')
 			return
 
 		if not isinstance(jobs, dict):
 			raise ValueError('Config: maintenance.jobs must be a dict')
 
+		start_date = arrow.get()
+
 		for name, config in jobs.items():
 			job_type = config['type']
 			interval_min = int(config.get('interval', '30'))
 
+			start_date = start_date.shift(seconds=5)
+
 			trig = IntervalTrigger(
 				minutes=interval_min,
-				start_date=arrow.get().shift(seconds=5).datetime,
+				start_date=start_date.datetime,
 				timezone=self._tz,
 			)
 
@@ -260,10 +264,11 @@ class ScheduledWorker:
 
 			'channel_ID': channel_ID,
 
+			'timezone':            ji.timezone,
+
 			'meta_teletext_page':  ji.meta_teletext_page,
 			'meta_country_code':   ji.meta_country_code,
 			'meta_language_code3': ji.meta_language_code3,
-			'meta_timezone':       ji.meta_timezone,
 			'meta_video_source':   ji.meta_video_source,
 
 			# TODO: remove, bcz it is necessary only for "capturing" job:

@@ -33,7 +33,6 @@ class JobInfo(MixinIdGuid, Model):
 	meta_teletext_page = sa.Column(sa.String(128))
 	meta_country_code = sa.Column(sa.String(16))
 	meta_language_code3 = sa.Column(sa.String(16))
-	meta_timezone = sa.Column(sa.String(128))
 	meta_video_source = sa.Column(sa.String(1200))
 
 	job_launch_list = relationship('JobLaunch', back_populates='job_info')
