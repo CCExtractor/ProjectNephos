@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # will be run this way:
 # $ multicat {timeout} -u @{channel_ip}{options} {out_file}
@@ -16,4 +16,10 @@
 # nc -l -u {host} {port}
 # 		(_h, _p) = channel_ip.split(':')
 
-echo "1" | out_file
+originalfile='/home/Videos/Hitch_Hikers_Guide_to_the_Galaxy/01.avi'
+
+for filename; do true; done
+
+echo $filename
+
+cp $originalfile $filename
