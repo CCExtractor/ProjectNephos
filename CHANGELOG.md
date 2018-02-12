@@ -5,7 +5,10 @@ This is the history of changes of the `unav-recordingmonitor` package
 > This file should be filled by maintainers, using pull requests
 > Please, follow this [guide](http://keepachangelog.com/en/0.3.0/)
 
-## unpublished // ??
+## 0.3.0 // 2018-02-12
+
+* special command-template for capturing UNAV
+* fix tiny bugs
 
 ## 0.2.0 // 2017-12-10
 
