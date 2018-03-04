@@ -338,7 +338,7 @@ class VideoInfoCommand(Command):
 		if not ifst.path:
 			raise ValueError('parameter `inp` of VideoInfoCommand MUST be a file-path')
 
-		cmd = 'ffprobe -loglevel error -print_format json -show_streams -show_format -hide_banner {inp}'.format(
+		cmd = 'ffprobe -loglevel error -print_format json -show_streams -show_format {inp}'.format(
 			inp=inp,
 		)
 
@@ -462,6 +462,6 @@ class ExtractCaptionsCommand(Command):
 		# dos2unix -q -k -o $FIL.txt
 
 		res.subs = subs
-		res.length = len(subs)
+		res.length = 0 if subs is None else len(subs)
 
 		return res
