@@ -238,38 +238,58 @@ docker build -f docker/recordingmonitor/Dockerfile -t unav/recordingmonitor .
 
 ## API USAGE
 
-### Channel: list
+### Service
+
+#### Service: ping
 
 ```bash
-curl -X GET \
-    http://127.0.0.1:5000/api/v0/channels
+curl -X GET http://127.0.0.1:5000/api/v0/about/ping
 ```
 
-### Channel: create
+#### Service: pid
+
+Almost the same as `about/ping` but returns PID of the main process.
 
 ```bash
-curl -X POST \
-    http://127.0.0.1:5000/api/v0/channels \
-    -H 'Content-TYpe: application/json' \
+curl -X GET http://127.0.0.1:5000/api/v0/about/pid
+```
+
+--------------------------------------------------------------------------------
+
+### Channels
+
+#### Channel: list
+
+```bash
+curl -X GET http://127.0.0.1:5000/api/v0/channels
+```
+
+#### Channel: create
+
+```bash
+curl -X POST http://127.0.0.1:5000/api/v0/channels \
+    -H 'Content-Type: application/json' \
     -d '{
         "name": "TVE1",
         "ip_string": "239.255.20.1:1234"
     }'
 ```
 
-### Job: list
+--------------------------------------------------------------------------------
+
+### Jobs
+
+#### Job: list
 
 ```bash
-curl -X GET \
-    http://127.0.0.1:5000/api/v0/jobs
+curl -X GET http://127.0.0.1:5000/api/v0/jobs
 ```
 
-### Job: create
+#### Job: create
 
 ```bash
 
-curl -X POST \
-    http://127.0.0.1:5000/api/v0/jobs \
+curl -X POST http://127.0.0.1:5000/api/v0/jobs \
     -H 'content-type: application/json' \
     -d '{
         "name": "rick and mortie",
@@ -290,6 +310,8 @@ curl -X POST \
         }
     }'
 ```
+
+--------------------------------------------------------------------------------
 
 ## AUTHORS
 
