@@ -127,7 +127,11 @@ class ChannelChecker:
 			log.debug('Cleanup dir [%s]', self.cwd)
 			shutil.rmtree(self.cwd)
 
-		log.info('status of [%s] checked', self.channel.name)
+		log.info(
+			'status of [%s] checked: [%s]',
+			self.channel.name,
+			cs.status,
+		)
 
 		# 3 save result:
 		self.res = {
