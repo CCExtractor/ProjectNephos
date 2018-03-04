@@ -4,17 +4,17 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = (0, 3, 0)
+VERSION = (0, 4, 0)
 VERSION_SUFFIX = 'dev.1'
-VERSION_SUFFIX = ''
+#VERSION_SUFFIX = ''
 
 VERSION_STRING = '.'.join([str(x) for x in VERSION[0:3]])
 RELEASE_STRING = VERSION_STRING + VERSION_SUFFIX
 
 __title__ = 'unav-recordingmonitor'
-__description__ = 'RecordingMonitor - Recording monitor'
-__copyright__ = '2016-2017 © Xirvik Python Team'
-__author__ = 'Xirvik Python Team'
+__description__ = 'RecordingMonitor - Capture streams and run postprocessing for videos'
+__copyright__ = '2016-2018 © Volebo Python Team'  # maxkoryukov: I don't know, what should be here
+__author__ = 'Volebo Python Team'                 # maxkoryukov: I don't know, what should be here
 __license__ = 'private'
 __version__ = VERSION_STRING
 __release__ = RELEASE_STRING
