@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import datetime
 
 import re
 import logging
@@ -48,6 +49,27 @@ from .jobs.result_processor import BaseJobResultProcessor
 log = logging.getLogger(__name__)
 
 
+def _to_start_date(date_str, timezonename):
+	if date_str is None:
+		return date_str
+
+	now = arrow.get(datetime.datetime.now(), timezonename)
+
+	try:
+		dt = arrow.get(date_str, 'HH:mm')
+
+		dt = dt.replace(
+			year=now.year,
+			month=now.month,
+			day=now.day,
+		)
+	except arrow.parser.ParserError:
+		log.error('Can not parse datetime string: [%s]', date_str)
+		return None
+
+	return dt.datetime
+
+
 class ScheduledWorker:
 
 	__re_clean = re.compile('[^-_\w\d]', flags=re.A | re.I)
@@ -88,6 +110,7 @@ class ScheduledWorker:
 		s = BackgroundScheduler()
 		self._scheduler = s
 		self._tz = timezone(tzname)
+		self._tzname = tzname
 		self.jobs_root = jobs_root
 
 		self._scheduler.configure(
@@ -135,21 +158,31 @@ class ScheduledWorker:
 		if not isinstance(jobs, dict):
 			raise ValueError('Config: maintenance.jobs must be a dict')
 
-		start_date = arrow.get()
+		default_start_date = arrow.get()
 
 		for name, config in jobs.items():
 			job_type = config['type']
 			interval_min = int(config.get('interval', '30'))
+			start_at = config.get('at')
 
-			start_date = start_date.shift(seconds=5)
+			if start_at is not None:
+				start_at = _to_start_date(start_at, self._tzname)
+
+			# if JOB.at is not defined, or cannot be parsed - use default
+			# start time:
+			if start_at is None:
+				log.debug('maintenance task [%s] will use the default start time', name)
+				default_start_date = default_start_date.shift(seconds=5)
+				start_at = default_start_date.datetime
 
 			trig = IntervalTrigger(
 				minutes=interval_min,
-				start_date=start_date.datetime,
+				start_date=start_at,
 				timezone=self._tz,
 			)
 
-			# TODO: it is not a good idea to pass the entire app_config to the job. But it's the fastest way for implementation
+			# TODO: it is not a good idea to pass the entire app_config to the job.
+			# But it's the fastest way for implementation
 			all_job_args = [app_config]
 
 			fn = 'unav.recordingmonitor.jobs.maintenance.{}:start'.format(job_type)
@@ -168,9 +201,10 @@ class ScheduledWorker:
 			)
 
 			log.debug(
-				'maintenance task [%s] of type [%s] added with interval [%s] minutes',
+				'maintenance task [%s] of type [%s] will start at [%s] with interval [%s] minutes',
 				name,
 				job_type,
+				start_at,
 				interval_min
 			)
 
