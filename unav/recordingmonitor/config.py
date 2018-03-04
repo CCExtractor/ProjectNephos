@@ -208,6 +208,11 @@ maintenance:
       type: channel_on_air
       interval: 60  # minutes
 
+    uploader:
+      type: uploader
+      interval: 1440  # minutes
+      at: '20:00'
+
 FLASK:
   DEBUG: False
   JSON_AS_ASCII: False
@@ -257,16 +262,6 @@ jobs:
         # out: '{out_filename_noext}.ts'
 
       after:
-
-        # ----------------------------------------------------------------------
-        # UPLOAD
-        # ----------------------------------------------------------------------
-
-        - cmd: ssh ca mkdir -p ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
-          note: create remote dir
-
-        - cmd: rsync -v --progress {out_filename_noext}.ts {out_filename_noext}.txt {out_filename_noext}.len ca:ES/{job_launch_date_from:%Y}/{job_launch_date_from:%Y%m}/{job_launch_date_from:%Y%m%d}
-          note: sync remote dir
 
         # ----------------------------------------------------------------------
         # / JOB COMMANDS
