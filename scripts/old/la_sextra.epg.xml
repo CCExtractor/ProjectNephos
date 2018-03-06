@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tv SYSTEM "xmltv.dtd">
+
+<tv>
+  <program  start="20170921071500 +0000" stop="20170921074800 +0000" channel="153">
+    <title lang="spa">FRIENDS</title>
+    <sub-title lang="spa">Friends narra las aventuras y desventuras de seis jóvenes de Nueva York. Rachel, Monica, Phoebe, Ross, Chandler y Joey forman una unida pandilla de amigos que viven en Manhattan y que suelen reunirse en sus apartamentos o en su bar habit</sub-title>
+    <desc lang="spa">FRIENDS
+Título Original: FRIENDS
+País: USA
+Año: 1997
+Duración: 0
+Sinopsis: .</desc>
+    <rating system="dvb:ESP">12</rating>
+    <category lang="en">reserved</category>
+    <ts-meta-id>54697</ts-meta-id>
+  </program>
+</tv>

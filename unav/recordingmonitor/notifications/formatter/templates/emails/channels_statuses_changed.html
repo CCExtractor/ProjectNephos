@@ -1,0 +1,30 @@
+CHANNELS STATE REPORT
+
+{% if channels_went_down %}
+NEW CHANNELS GO DOWN
+
+{% for channel_info in channels_went_down %}
+	{{channel_info.channel.name}} : {{channel_info.new.status}}
+{% endfor %}
+
+{% endif %}
+{% if channels_stay_down %}
+CHANNELS STILL DOWN
+
+These channels are still DOWN, since last check
+
+{% for channel_info in channels_stay_down %}
+	{{channel_info.channel.name}} : {{channel_info.new.status}}
+{% endfor %}
+
+{% endif %}
+{% if channels_went_up %}
+NEW CHANNELS GO UP
+
+{% for channel_info in channels_went_up %}
+	{{channel_info.channel.name}} : {{channel_info.new.status}}
+{% endfor %}
+
+{% endif %}
+
+Timestamp of this check: {{ ts }}

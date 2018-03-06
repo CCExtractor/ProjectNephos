@@ -1,0 +1,5 @@
+There is not enough free space left on the disk!
+
+Path: {{ path }}
+Free: {{ free|filesizeformat }} ({{ free_percent|round(2, 'common') }}%)
+Quota: the least of {{ free_min|filesizeformat }} OR {{ free_min_percent|round(2, 'common') }}%

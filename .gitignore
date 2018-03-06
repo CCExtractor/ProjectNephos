@@ -1,0 +1,39 @@
+# ====================
+# Logs and temporary stuff
+
+/log/
+/recordingmonitor.log
+/var/
+/tmp/
+
+# ====================
+# Deps:
+
+# /libs/
+
+# ====================
+# Build info:
+
+*.pyc
+/.cache/
+/*egg-info/
+
+/build/*
+/dist/*
+/software/multicat
+/software/multicat.bin
+/software/ccextractor-0.69-a02
+
+# ====================
+# Coverage and test results:
+
+.coverage
+/cover-html/
+
+# ====================
+# Private stuff:
+
+.env
+devstart.py
+recordingmonitor.sqlite
+recordingmonitor.yml

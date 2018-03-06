@@ -1,0 +1,12 @@
+TOP|20170811210000|2017-08-11_2100_ES_Antena-3_Noticias_Deportes_El_tiempo
+COL|Communication Studies Archive, UCLA
+UID|0339184e-7ee6-11e7-8fb0-005056b6e57b
+DUR|00:00:00
+VID||
+COL|Communication Studies Archive, UCLA
+UID|3faa612c-7ed5-11e7-94f6-005056b6e57b
+DUR|
+SRC|Universidad de Navarra, Spain
+CMT|
+LAN|SPA
+LBT|2017-08-11 23:00:00 CEST Europe/Madrid

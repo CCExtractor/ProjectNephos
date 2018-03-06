@@ -1,0 +1,12 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+omit =
+	*_test.py,
+	*/__main__.py
+
+[report]
+precision=3
+
+[html]
+directory = cover-html
