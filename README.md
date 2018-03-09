@@ -7,7 +7,7 @@
 This guide for the **redhen** server (depends on paths and environment).
 
 1. Download the latest `unav-recordingmonitor-bundle-x.x.x.tgz` from
-    [GitHub Releases](https://github.com/CCExtractor/ProjectNephos.git)
+    [GitHub Releases](https://github.com/CCExtractor/ProjectNephos/releases)
 2. Extract to the `/home/redhen/recordingmonitor`
 3. Add the following line to crontab ([why use exec](http://www.somacon.com/p38.php)):
     `*/15 * * * * root exec /bin/bash /home/redhen/recordingmonitor/scripts/public/start.sh`
@@ -311,7 +311,10 @@ curl -X POST http://127.0.0.1:5000/api/v0/jobs \
 
 --------------------------------------------------------------------------------
 
+## AUTHORS
+
+* Maksim Koryukov
+
 ## LICENSE
 
 GPLv2 - part of CCExtractor and RedHen projects
-
